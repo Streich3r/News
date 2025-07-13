@@ -1,106 +1,108 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nachrichten Übersicht</title>
-<style>
-  body {
-    margin: 0;
-    font-family: sans-serif;
-    background-color: #121212;
-    color: white;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; /* Alles am unteren Bildschirmrand ausrichten */
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nachrichten Übersicht</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #121212;
+      color: white;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
 
-  /* Container für Inhalt und Tabs zusammen unten */
-  .bottom-container {
-    width: 100%;
-    max-height: 50vh; /* Max Höhe für Inhalt + Tabs */
-    display: flex;
-    flex-direction: column;
-    background: #121212;
-  }
+    .bottom-container {
+      width: 100%;
+      max-height: 50vh;
+      display: flex;
+      flex-direction: column;
+      background: #121212;
+    }
 
-  /* Inhalt über Tabs, scrollbar wenn zu groß */
-  .content {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 1em;
-  }
+    .content {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 1em;
+    }
 
-  /* Tabs unten */
-  .tabs {
-    height: 60px;
-    background: #1e1e1e;
-    border-top: 2px solid #03dac6;
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
+    .tabs {
+      height: 60px;
+      background: #1e1e1e;
+      border-top: 2px solid #03dac6;
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
 
-  .tab {
-    flex: 0 0 100vw; /* Ein Tab füllt 100% der Breite */
-    scroll-snap-align: center;
-    text-align: center;
-    line-height: 60px;
-    cursor: pointer;
-    white-space: nowrap;
-    border-top: 2px solid transparent;
-    user-select: none;
-    box-sizing: border-box;
-  }
-  .tab.active {
-    border-top: 2px solid #03dac6;
-    background: #282828;
-  }
+    .tab {
+      flex: 0 0 100vw;
+      scroll-snap-align: center;
+      text-align: center;
+      line-height: 60px;
+      cursor: pointer;
+      white-space: nowrap;
+      border-top: 2px solid transparent;
+      user-select: none;
+      box-sizing: border-box;
+    }
+    .tab.active {
+      border-top: 2px solid #03dac6;
+      background: #282828;
+    }
 
-  /* Tab-Content nur das aktive zeigen */
-  .tab-content {
-    display: none;
-  }
-  .tab-content.active {
-    display: block;
-  }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
 
-  a {
-    color: #03a9f4;
-    text-decoration: none;
-    display: block;
-    margin: 0.5em 0;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-</style>
+    a {
+      color: #03a9f4;
+      text-decoration: none;
+      display: block;
+      margin: 0.5em 0;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
   <div class="bottom-container">
     <div class="content">
       <div class="tab-content active" id="de">
-        <a href="https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtVnVLQUFQAQ?hl=de&gl=DE&ceid=DE:de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
-        <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
-        <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
+        <a href="https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtVnVLQUFQAQ?hl=de&gl=DE&ceid=DE:de" target="_blank">📰 Google News Deutschland</a>
+        <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
+        <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
+        <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
       </div>
+
       <div class="tab-content" id="int">
-        <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
-        <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
-        <a href="https://www.nzz.ch/international" target="_blank" rel="noopener noreferrer">NZZ International</a>
+        <a href="https://news.google.com/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRGx1YlY4U0FtVnVLQUFQAQ?hl=en&gl=US&ceid=US:en" target="_blank">🌍 Google News International</a>
+        <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
+        <a href="https://www.reuters.com" target="_blank">Reuters</a>
+        <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
       </div>
+
       <div class="tab-content" id="tech">
-        <a href="https://www.heise.de" target="_blank" rel="noopener noreferrer">heise online</a>
-        <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</a>
-        <a href="https://www.golem.de" target="_blank" rel="noopener noreferrer">Golem.de</a>
+        <a href="https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFp1YlY4U0FtVnVLQUFQAQ?hl=de&gl=DE&ceid=DE:de" target="_blank">💻 Google News Technik</a>
+        <a href="https://www.heise.de" target="_blank">heise online</a>
+        <a href="https://t3n.de" target="_blank">t3n</a>
+        <a href="https://www.golem.de" target="_blank">Golem.de</a>
       </div>
+
       <div class="tab-content" id="media">
-        <a href="https://www.google.com/news" target="_blank" rel="noopener noreferrer">Google News</a>
-        <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer">Hacker News</a>
-        <a href="https://www.npr.org" target="_blank" rel="noopener noreferrer">NPR</a>
+        <a href="https://news.google.com/publications/CAAqBwgKMOfNwAswnv2lAw?hl=de&gl=DE&ceid=DE:de" target="_blank">🗞️ Google News Medien</a>
+        <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
+        <a href="https://www.npr.org" target="_blank">NPR</a>
       </div>
     </div>
 
