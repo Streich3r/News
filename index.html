@@ -10,17 +10,9 @@
     font-family: sans-serif;
     background-color: #121212;
     color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  .content {
-    flex: 1;
-    padding: 1em;
-    padding-bottom: 60px; /* Platz für die fixe Navigationsleiste */
-    display: flex;
-    flex-direction: column-reverse; /* Links von unten nach oben */
-    overflow-y: auto;
+    height: 100vh;
+    overflow: hidden; /* damit kein Scrollen */
+    position: relative;
   }
   .tabs {
     position: fixed;
@@ -30,7 +22,7 @@
     display: flex;
     background: #1e1e1e;
     border-top: 2px solid #03dac6;
-    z-index: 1000;
+    z-index: 10;
   }
   .tab {
     flex: 1;
@@ -47,17 +39,26 @@
     background: #282828;
   }
   .tab-content {
-    /* Nur sichtbar wenn aktiv */
+    position: fixed;
+    bottom: 50px; /* Höhe der Tabs + kleiner Abstand */
+    left: 0;
+    right: 0;
+    max-height: 120px; /* optional, damit es nicht zu hoch wird */
+    overflow-y: auto;
     display: none;
+    flex-direction: column-reverse; /* Links von unten nach oben */
+    padding: 0 1em;
+    background: #1e1e1e;
+    border-top: 2px solid #03dac6;
+    z-index: 9;
   }
   .tab-content.active {
-    display: block;
+    display: flex;
   }
   a {
     color: #03a9f4;
     text-decoration: none;
-    margin: 0.5em 0;
-    user-select: text;
+    margin: 0.2em 0;
   }
   a:hover {
     text-decoration: underline;
@@ -65,15 +66,13 @@
 </style>
 </head>
 <body>
-  <div class="content">
-    <div class="tab-content active" id="de">
-      <a href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
-      <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
-      <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
-    </div>
-    <div class="tab-content" id="int">
-      <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
-      <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
-      <a href="https://www.nzz.ch/international" target="_blank" rel="noopener noreferrer">NZZ International</a>
-    </div>
-    <div
+
+<div class="tab-content active" id="de">
+  <a href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
+  <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
+  <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
+</div>
+<div class="tab-content" id="int">
+  <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
+  <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
+  <a href="h
