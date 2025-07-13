@@ -13,13 +13,12 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            padding-bottom: 60px; /* Platz für die fixe Leiste unten */
         }
         .content {
-            flex: 1;
+            flex: 1 1 auto;
             padding: 1em;
             overflow-y: auto;
-            /* Content bleibt oben, Abstand zur Leiste unten */
+            max-height: calc(100vh - 60px); /* Platz lassen für Navigationsleiste */
         }
         .tabs {
             display: flex;
@@ -32,10 +31,10 @@
             right: 0;
             height: 60px;
             z-index: 10;
-            scrollbar-width: thin; /* Optional dünner Scrollbalken Firefox */
+            scrollbar-width: thin;
         }
         .tab {
-            flex: 0 0 auto; /* Nur so breit wie nötig, kein Dehnen */
+            flex: 0 0 auto;
             text-align: center;
             padding: 1em 1.5em;
             cursor: pointer;
