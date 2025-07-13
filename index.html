@@ -10,35 +10,44 @@
     font-family: sans-serif;
     background-color: #121212;
     color: white;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    padding-bottom: 60px; /* Platz für fixe Navi */
+    justify-content: flex-end; /* Alles am unteren Bildschirmrand ausrichten */
   }
+
+  /* Container für Inhalt und Tabs zusammen unten */
+  .bottom-container {
+    width: 100%;
+    max-height: 50vh; /* Max Höhe für Inhalt + Tabs */
+    display: flex;
+    flex-direction: column;
+    background: #121212;
+  }
+
+  /* Inhalt über Tabs, scrollbar wenn zu groß */
   .content {
-    flex: 1 1 auto;
-    padding: 1em;
+    flex-grow: 1;
     overflow-y: auto;
+    padding: 1em;
   }
+
+  /* Tabs unten */
   .tabs {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     height: 60px;
     background: #1e1e1e;
     border-top: 2px solid #03dac6;
     display: flex;
     overflow-x: auto;
-    scroll-snap-type: x mandatory; /* für snap */
-    -webkit-overflow-scrolling: touch; /* smooth scroll auf iOS */
-    z-index: 1000;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
   }
+
   .tab {
-    flex: 0 0 100vw; /* Tab nimmt 100% der Breite ein */
-    scroll-snap-align: center; /* snap mittig */
+    flex: 0 0 100vw; /* Ein Tab füllt 100% der Breite */
+    scroll-snap-align: center;
     text-align: center;
-    padding: 1em 0;
+    line-height: 60px;
     cursor: pointer;
     white-space: nowrap;
     border-top: 2px solid transparent;
@@ -49,12 +58,15 @@
     border-top: 2px solid #03dac6;
     background: #282828;
   }
+
+  /* Tab-Content nur das aktive zeigen */
   .tab-content {
     display: none;
   }
   .tab-content.active {
     display: block;
   }
+
   a {
     color: #03a9f4;
     text-decoration: none;
@@ -67,63 +79,62 @@
 </style>
 </head>
 <body>
-  <div class="content">
-    <div class="tab-content active" id="de">
-      <a href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
-      <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
-      <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
+
+  <div class="bottom-container">
+    <div class="content">
+      <div class="tab-content active" id="de">
+        <a href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
+        <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
+        <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
+      </div>
+      <div class="tab-content" id="int">
+        <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
+        <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
+        <a href="https://www.nzz.ch/international" target="_blank" rel="noopener noreferrer">NZZ International</a>
+      </div>
+      <div class="tab-content" id="tech">
+        <a href="https://www.heise.de" target="_blank" rel="noopener noreferrer">heise online</a>
+        <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</a>
+        <a href="https://www.golem.de" target="_blank" rel="noopener noreferrer">Golem.de</a>
+      </div>
+      <div class="tab-content" id="media">
+        <a href="https://www.google.com/news" target="_blank" rel="noopener noreferrer">Google News</a>
+        <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer">Hacker News</a>
+        <a href="https://www.npr.org" target="_blank" rel="noopener noreferrer">NPR</a>
+      </div>
     </div>
-    <div class="tab-content" id="int">
-      <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
-      <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
-      <a href="https://www.nzz.ch/international" target="_blank" rel="noopener noreferrer">NZZ International</a>
-    </div>
-    <div class="tab-content" id="tech">
-      <a href="https://www.heise.de" target="_blank" rel="noopener noreferrer">heise online</a>
-      <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</a>
-      <a href="https://www.golem.de" target="_blank" rel="noopener noreferrer">Golem.de</a>
-    </div>
-    <div class="tab-content" id="media">
-      <a href="https://www.google.com/news" target="_blank" rel="noopener noreferrer">Google News</a>
-      <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer">Hacker News</a>
-      <a href="https://www.npr.org" target="_blank" rel="noopener noreferrer">NPR</a>
+
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="de">🇩🇪 Deutschland</div>
+      <div class="tab" data-tab="int">🌍 International</div>
+      <div class="tab" data-tab="tech">💻 Technik</div>
+      <div class="tab" data-tab="media">📰 Medien</div>
     </div>
   </div>
 
-  <div class="tabs" id="tabs">
-    <div class="tab active" data-tab="de">🇩🇪 Deutschland</div>
-    <div class="tab" data-tab="int">🌍 International</div>
-    <div class="tab" data-tab="tech">💻 Technik</div>
-    <div class="tab" data-tab="media">📰 Medien</div>
-  </div>
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const contents = document.querySelectorAll('.tab-content');
 
-  <script>
-    const tabs = document.querySelectorAll('.tab');
-    const contents = document.querySelectorAll('.tab-content');
-    const tabsContainer = document.getElementById('tabs');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
 
-    tabs.forEach((tab, index) => {
-      tab.addEventListener('click', () => {
-        // Aktiven Tab setzen
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+      contents.forEach(c => c.classList.remove('active'));
+      document.getElementById(tab.dataset.tab).classList.add('active');
 
-        // Inhalt wechseln
-        contents.forEach(c => c.classList.remove('active'));
-        document.getElementById(tab.dataset.tab).classList.add('active');
-
-        // Scrollen, sodass der Tab mittig ist
-        tab.scrollIntoView({behavior: 'smooth', inline: 'center'});
-      });
+      tab.scrollIntoView({behavior: 'smooth', inline: 'center'});
     });
+  });
 
-    // Optional: Beim Laden erstmal aktiven Tab mittig scrollen
-    window.onload = () => {
-      const activeTab = document.querySelector('.tab.active');
-      if (activeTab) {
-        activeTab.scrollIntoView({behavior: 'smooth', inline: 'center'});
-      }
-    };
-  </script>
+  window.onload = () => {
+    const activeTab = document.querySelector('.tab.active');
+    if (activeTab) {
+      activeTab.scrollIntoView({behavior: 'smooth', inline: 'center'});
+    }
+  };
+</script>
+
 </body>
 </html>
