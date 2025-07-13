@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nachrichten Übersicht</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #121212;
+            color: white;
+        }
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            background: #1e1e1e;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 1em;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            border-bottom: 2px solid #03dac6;
+        }
+        .content {
+            padding: 1em;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        a {
+            color: #03a9f4;
+            text-decoration: none;
+            display: block;
+            margin: 0.5em 0;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabs">
+        <div class="tab active" data-tab="de">🇩🇪 Deutschland</div>
+        <div class="tab" data-tab="int">🌍 International</div>
+        <div class="tab" data-tab="tech">💻 Technik</div>
+        <div class="tab" data-tab="media">📰 Medien</div>
+    </div>
+
+    <div class="content">
+        <div class="tab-content active" id="de">
+            <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
+            <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
+            <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
+        </div>
+        <div class="tab-content" id="int">
+            <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
+            <a href="https://www.reuters.com" target="_blank">Reuters</a>
+            <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
+        </div>
+        <div class="tab-content" id="tech">
+            <a href="https://www.heise.de" target="_blank">heise online</a>
+            <a href="https://t3n.de" target="_blank">t3n</a>
+            <a href="https://www.golem.de" target="_blank">Golem.de</a>
+        </div>
+        <div class="tab-content" id="media">
+            <a href="https://www.google.com/news" target="_blank">Google News</a>
+            <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
+            <a href="https://www.npr.org" target="_blank">NPR</a>
+        </div>
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                contents.forEach(c => c.classList.remove('active'));
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
