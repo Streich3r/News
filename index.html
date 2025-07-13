@@ -56,10 +56,11 @@
       background: #1e1e1e;
       border-top: 2px solid #03dac6;
       display: flex;
-      overflow-x: auto;
+      overflow-x: auto;     /* horizontal scrollbar erlauben */
+      overflow-y: hidden;   /* vertikale scrollbar verhindern */
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      margin-bottom: 60px; /* ← Abstand zum unteren Bildschirmrand */
+      margin-bottom: 60px;  /* Abstand zum unteren Bildschirmrand */
     }
 
     .tab {
