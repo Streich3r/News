@@ -1,118 +1,85 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nachrichten Übersicht</title>
-<style>
-    body {
-        margin: 0;
-        font-family: sans-serif;
-        background-color: #121212;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
-    .content {
-        flex: 1 1 auto;
-        padding: 1em;
-        overflow-y: auto;
-        max-height: calc(100vh - 60px);
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nachrichten Übersicht</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .content {
+            flex: 1 1 auto;
+            padding: 1em;
+            padding-bottom: 100px; /* Abstand unten für die Navigationsleiste */
+            overflow-y: auto;
+            max-height: calc(100vh - 60px);
 
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end; /* Hier: unten ausrichten */
-    }
-    .tabs {
-        display: flex;
-        overflow-x: auto;
-        background: #1e1e1e;
-        border-top: 2px solid #03dac6;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 60px;
-        z-index: 10;
-        scrollbar-width: thin;
-    }
-    .tab {
-        flex: 0 0 auto;
-        text-align: center;
-        padding: 1em 1.5em;
-        cursor: pointer;
-        white-space: nowrap;
-        border-top: 2px solid transparent;
-        border-bottom: none;
-        user-select: none;
-        font-size: 1rem;
-    }
-    .tab.active {
-        border-top: 2px solid #03dac6;
-        background: #282828;
-    }
-    .tab-content {
-        display: none;
-    }
-    .tab-content.active {
-        display: block;
-    }
-    a {
-        color: #03a9f4;
-        text-decoration: none;
-        display: block;
-        margin: 0.5em 0;
-    }
-    a:hover {
-        text-decoration: underline;
-    }
-</style>
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* Inhalte von unten nach oben */
+        }
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            background: #1e1e1e;
+            border-top: 2px solid #03dac6;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            z-index: 10;
+        }
+        .tab {
+            flex: 1 0 auto;
+            text-align: center;
+            padding: 1em 0;
+            cursor: pointer;
+            white-space: nowrap;
+            border-top: 2px solid transparent;
+            border-bottom: none;
+            user-select: none;
+        }
+        .tab.active {
+            border-top: 2px solid #03dac6;
+            background: #282828;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        a {
+            color: #03a9f4;
+            text-decoration: none;
+            display: block;
+            margin: 0.5em 0;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<div class="content">
-    <div class="tab-content active" id="de">
-        <a href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
-        <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
-        <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
-    </div>
-    <div class="tab-content" id="int">
-        <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
-        <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
-        <a href="https://www.nzz.ch/international" target="_blank" rel="noopener noreferrer">NZZ International</a>
-    </div>
-    <div class="tab-content" id="tech">
-        <a href="https://www.heise.de" target="_blank" rel="noopener noreferrer">heise online</a>
-        <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</a>
-        <a href="https://www.golem.de" target="_blank" rel="noopener noreferrer">Golem.de</a>
-    </div>
-    <div class="tab-content" id="media">
-        <a href="https://www.google.com/news" target="_blank" rel="noopener noreferrer">Google News</a>
-        <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer">Hacker News</a>
-        <a href="https://www.npr.org" target="_blank" rel="noopener noreferrer">NPR</a>
-    </div>
-</div>
-
-<div class="tabs">
-    <div class="tab active" data-tab="de">🇩🇪 Deutschland</div>
-    <div class="tab" data-tab="int">🌍 International</div>
-    <div class="tab" data-tab="tech">💻 Technik</div>
-    <div class="tab" data-tab="media">📰 Medien</div>
-</div>
-
-<script>
-    const tabs = document.querySelectorAll('.tab');
-    const contents = document.querySelectorAll('.tab-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            contents.forEach(c => c.classList.remove('active'));
-            document.getElementById(tab.dataset.tab).classList.add('active');
-        });
-    });
-</script>
-</body>
-</html>
+    <div class="content">
+        <div class="tab-content active" id="de">
+            <a href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
+            <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
+            <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
+        </div>
+        <div class="tab-content" id="int">
+            <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
+            <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
+            <a href="https://www.nzz.ch/international" target="_blank" rel="noopener noreferrer">NZZ International</a>
+        </div>
+        <div class="tab-content" id="tech">
+            <a href="https://www.heise.de" target="_blank" rel="noopener noreferrer">heise online</a>
+            <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</_
