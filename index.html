@@ -13,29 +13,28 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            padding-bottom: 60px; /* Platz für fixe Navigationsleiste */
         }
         .content {
             flex: 1 1 auto;
             padding: 1em;
-            padding-bottom: 100px; /* Abstand unten für die Navigationsleiste */
             overflow-y: auto;
-            max-height: calc(100vh - 60px);
 
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* Inhalte von unten nach oben */
+            justify-content: flex-end; /* Links von unten nach oben */
         }
         .tabs {
-            display: flex;
-            overflow-x: auto;
-            background: #1e1e1e;
-            border-top: 2px solid #03dac6;
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             height: 60px;
-            z-index: 10;
+            background: #1e1e1e;
+            border-top: 2px solid #03dac6;
+            display: flex;
+            overflow-x: auto;
+            z-index: 1000;
         }
         .tab {
             flex: 1 0 auto;
@@ -82,4 +81,36 @@
         </div>
         <div class="tab-content" id="tech">
             <a href="https://www.heise.de" target="_blank" rel="noopener noreferrer">heise online</a>
-            <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</_
+            <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</a>
+            <a href="https://www.golem.de" target="_blank" rel="noopener noreferrer">Golem.de</a>
+        </div>
+        <div class="tab-content" id="media">
+            <a href="https://www.google.com/news" target="_blank" rel="noopener noreferrer">Google News</a>
+            <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer">Hacker News</a>
+            <a href="https://www.npr.org" target="_blank" rel="noopener noreferrer">NPR</a>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="de">🇩🇪 Deutschland</div>
+        <div class="tab" data-tab="int">🌍 International</div>
+        <div class="tab" data-tab="tech">💻 Technik</div>
+        <div class="tab" data-tab="media">📰 Medien</div>
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                contents.forEach(c => c.classList.remove('active'));
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
