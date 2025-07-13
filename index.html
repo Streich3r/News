@@ -63,8 +63,7 @@
 
     .tab {
       flex: 0 0 auto;
-      min-width: 100vw;
-      scroll-snap-align: center;
+      padding: 0 1em;
       text-align: center;
       line-height: 60px;
       cursor: pointer;
@@ -110,39 +109,45 @@
     </div>
 
     <div class="tabs" id="tabs">
-      <div class="tab active" data-tab="de">🇩🇪 Deutschland</div>
-      <div class="tab" data-tab="int">🌍 International</div>
-      <div class="tab" data-tab="tech">💻 Technik</div>
-      <div class="tab" data-tab="media">📰 Medien</div>
+      <div class="tab active" data-index="0">🇩🇪 Deutschland</div>
+      <div class="tab" data-index="1">🌍 International</div>
+      <div class="tab" data-index="2">💻 Technik</div>
+      <div class="tab" data-index="3">📰 Medien</div>
     </div>
   </div>
 
   <script>
     const tabs = document.querySelectorAll('.tab');
     const contentWrapper = document.getElementById('contentWrapper');
-    const tabContents = document.querySelectorAll('.tab-content');
+    const contents = document.querySelectorAll('.tab-content');
 
-    tabs.forEach((tab, index) => {
+    function setActiveTab(index) {
+      tabs.forEach(t => t.classList.remove('active'));
+      if (tabs[index]) {
+        tabs[index].classList.add('active');
+        tabs[index].scrollIntoView({ behavior: 'smooth', inline: 'center' });
+      }
+    }
+
+    tabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+        const index = parseInt(tab.dataset.index);
         contentWrapper.scrollTo({
           left: index * contentWrapper.clientWidth,
           behavior: 'smooth'
         });
+        setActiveTab(index);
       });
     });
 
+    let isScrolling;
     contentWrapper.addEventListener('scroll', () => {
-      const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
-      tabs.forEach(t => t.classList.remove('active'));
-      if (tabs[index]) tabs[index].classList.add('active');
+      clearTimeout(isScrolling);
+      isScrolling = setTimeout(() => {
+        const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
+        setActiveTab(index);
+      }, 100);
     });
-
-    window.onload = () => {
-      const activeTab = document.querySelector('.tab.active');
-      if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center' });
-    };
   </script>
 
 </body>
