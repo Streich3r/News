@@ -57,15 +57,16 @@
       border-top: 2px solid #03dac6;
       display: flex;
       overflow-x: auto;
-      overflow-y: hidden; /* vertikales Scrollen aus */
+      overflow-y: hidden; /* kein vertikales Scrollen */
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      margin-bottom: 60px; /* Abstand zum unteren Bildschirmrand */
-      width: 100%; /* volle Breite */
+      margin-bottom: 60px;
+      width: 100%;
     }
 
+    /* Jedes Tab nimmt 100% der Breite ein, damit immer nur ein Tab sichtbar ist */
     .tab {
-      flex: 0 0 auto;
+      flex: 0 0 100%;
       padding: 0 1em;
       text-align: center;
       line-height: 60px;
@@ -74,6 +75,7 @@
       border-top: 2px solid transparent;
       user-select: none;
       box-sizing: border-box;
+      scroll-snap-align: center; /* damit Snap mittig ist */
     }
 
     .tab.active {
@@ -122,13 +124,18 @@
   <script>
     const tabs = document.querySelectorAll('.tab');
     const contentWrapper = document.getElementById('contentWrapper');
+    const tabsWrapper = document.getElementById('tabs');
 
     function setActiveTab(index) {
       tabs.forEach(t => t.classList.remove('active'));
       if (tabs[index]) {
         tabs[index].classList.add('active');
-        // Aktiven Tab horizontal mittig in der Leiste anzeigen
-        tabs[index].scrollIntoView({ behavior: 'smooth', inline: 'center' });
+        // Scrollt den aktiven Tab horizontal mittig — 
+        // Da jeder Tab 100% breit ist, scrollt das Ganze auf left = index * tabsWrapper.clientWidth
+        tabsWrapper.scrollTo({
+          left: index * tabsWrapper.clientWidth,
+          behavior: 'smooth'
+        });
       }
     }
 
@@ -151,6 +158,9 @@
         setActiveTab(index);
       }, 100);
     });
+
+    // Initial sicherstellen, dass der erste Tab mittig ist
+    setActiveTab(0);
   </script>
 
 </body>
