@@ -1,126 +1,104 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nachrichten Übersicht</title>
-<style>
-  body {
-    margin: 0;
-    font-family: sans-serif;
-    background-color: #121212;
-    color: white;
-    height: 100vh;
-    overflow: hidden; /* kein Scrollen */
-    position: relative;
-  }
-  /* Tab-Inhalte */
-  .tab-content {
-    position: fixed;
-    bottom: 50px; /* Höhe der Tabs */
-    left: 0;
-    right: 0;
-    max-height: 120px; /* max Höhe der Links */
-    overflow-y: auto;
-    display: none;
-    flex-direction: column-reverse; /* Links von unten nach oben */
-    padding: 0 1em;
-    background: #1e1e1e;
-    border-top: 2px solid #03dac6;
-    z-index: 9;
-  }
-  .tab-content.active {
-    display: flex;
-  }
-  a {
-    color: #03a9f4;
-    text-decoration: none;
-    margin: 0.2em 0;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-  /* Navigationsleiste (Tabs) */
-  .tabs {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    background: #1e1e1e;
-    border-top: 2px solid #03dac6;
-    z-index: 10;
-  }
-  .tab {
-    flex: 1;
-    text-align: center;
-    padding: 1em;
-    cursor: pointer;
-    white-space: nowrap;
-    border-top: 2px solid transparent;
-    border-bottom: none;
-    user-select: none;
-  }
-  .tab.active {
-    border-top: 2px solid #03dac6;
-    background: #282828;
-  }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nachrichten Übersicht</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .content {
+            flex: 1;
+            padding: 1em;
+            overflow-y: auto;
+        }
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            background: #1e1e1e;
+            border-top: 2px solid #03dac6;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 1em;
+            cursor: pointer;
+            white-space: nowrap;
+            border-top: 2px solid transparent;
+            border-bottom: none;
+        }
+        .tab.active {
+            border-top: 2px solid #03dac6;
+            background: #282828;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        a {
+            color: #03a9f4;
+            text-decoration: none;
+            display: block;
+            margin: 0.5em 0;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
+    <div class="content">
+        <div class="tab-content active" id="de">
+            <a href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
+            <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
+            <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
+        </div>
+        <div class="tab-content" id="int">
+            <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
+            <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
+            <a href="https://www.nzz.ch/international" target="_blank" rel="noopener noreferrer">NZZ International</a>
+        </div>
+        <div class="tab-content" id="tech">
+            <a href="https://www.heise.de" target="_blank" rel="noopener noreferrer">heise online</a>
+            <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</a>
+            <a href="https://www.golem.de" target="_blank" rel="noopener noreferrer">Golem.de</a>
+        </div>
+        <div class="tab-content" id="media">
+            <a href="https://www.google.com/news" target="_blank" rel="noopener noreferrer">Google News</a>
+            <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer">Hacker News</a>
+            <a href="https://www.npr.org" target="_blank" rel="noopener noreferrer">NPR</a>
+        </div>
+    </div>
 
-<!-- Tab-Inhalte -->
-<div class="tab-content active" id="de">
-  <a href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer">Tagesschau</a>
-  <a href="https://www.sueddeutsche.de" target="_blank" rel="noopener noreferrer">Süddeutsche</a>
-  <a href="https://www.zeit.de" target="_blank" rel="noopener noreferrer">Die Zeit</a>
-</div>
-<div class="tab-content" id="int">
-  <a href="https://www.bbc.com/news" target="_blank" rel="noopener noreferrer">BBC News</a>
-  <a href="https://www.reuters.com" target="_blank" rel="noopener noreferrer">Reuters</a>
-  <a href="https://www.nzz.ch/international" target="_blank" rel="noopener noreferrer">NZZ International</a>
-</div>
-<div class="tab-content" id="tech">
-  <a href="https://www.heise.de" target="_blank" rel="noopener noreferrer">heise online</a>
-  <a href="https://t3n.de" target="_blank" rel="noopener noreferrer">t3n</a>
-  <a href="https://www.golem.de" target="_blank" rel="noopener noreferrer">Golem.de</a>
-</div>
-<div class="tab-content" id="media">
-  <a href="https://www.google.com/news" target="_blank" rel="noopener noreferrer">Google News</a>
-  <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer">Hacker News</a>
-  <a href="https://www.npr.org" target="_blank" rel="noopener noreferrer">NPR</a>
-</div>
+    <div class="tabs">
+        <div class="tab active" data-tab="de">🇩🇪 Deutschland</div>
+        <div class="tab" data-tab="int">🌍 International</div>
+        <div class="tab" data-tab="tech">💻 Technik</div>
+        <div class="tab" data-tab="media">📰 Medien</div>
+    </div>
 
-<!-- Navigationsleiste -->
-<div class="tabs" id="tabs">
-  <div class="tab active" data-tab="de">🇩🇪 Deutschland</div>
-  <div class="tab" data-tab="int">🌍 International</div>
-  <div class="tab" data-tab="tech">💻 Technik</div>
-  <div class="tab" data-tab="media">📰 Medien</div>
-</div>
+    <script>
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
 
-<script>
-  const tabs = document.querySelectorAll('.tab');
-  const contents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
 
-  // Klick-Event zum Tab wechseln
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      contents.forEach(c => c.classList.remove('active'));
-      document.getElementById(tab.dataset.tab).classList.add('active');
-    });
-  });
-
-  // Swipe-Handling
-  let startX = 0;
-  let endX = 0;
-  const threshold = 50; // minimale Swipe-Distanz in px
-
-  // Swipe nur im Bereich der Tabs oder Content möglich
-  const swipeArea = document.body; // Kann auch '.content' sein, wenn du einen Wrapper hast
-
-  swipeArea.addEventListener('touchstart', e => {
-    startX = e.changedTouches[0].
+                contents.forEach(c => c.classList.remove('active'));
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
