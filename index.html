@@ -57,18 +57,16 @@
       border-top: 2px solid #03dac6;
       display: flex;
       overflow-x: auto;
-      overflow-y: hidden;
+      overflow-y: hidden; /* vertikales Scrollen aus */
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       margin-bottom: 60px; /* Abstand zum unteren Bildschirmrand */
-      width: 120px;       /* Breite so, dass nur 1 Tab sichtbar ist */
-      margin-left: auto;  /* zentriert die Navigationsleiste horizontal */
-      margin-right: auto;
+      width: 100%; /* volle Breite */
     }
 
     .tab {
-      flex: 0 0 120px;    /* fester Tab mit gleicher Breite */
-      padding: 0;
+      flex: 0 0 auto;
+      padding: 0 1em;
       text-align: center;
       line-height: 60px;
       cursor: pointer;
@@ -129,6 +127,7 @@
       tabs.forEach(t => t.classList.remove('active'));
       if (tabs[index]) {
         tabs[index].classList.add('active');
+        // Aktiven Tab horizontal mittig in der Leiste anzeigen
         tabs[index].scrollIntoView({ behavior: 'smooth', inline: 'center' });
       }
     }
