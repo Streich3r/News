@@ -1,8 +1,7 @@
 
 # Nachrichten Swipe Webseite
 
-Dies ist eine minimalistische, mobile Webseite mit Tabs unten und Swipe-Funktion, basierend auf NZZ und Google News.
-
+Dies ist eine minimalistische, mobile Webseite mit Tabs unten und Swipe-Funktion.
 
 ## Features
 
