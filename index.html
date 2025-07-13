@@ -56,16 +56,19 @@
       background: #1e1e1e;
       border-top: 2px solid #03dac6;
       display: flex;
-      overflow-x: auto;     /* horizontal scrollbar erlauben */
-      overflow-y: hidden;   /* vertikale scrollbar verhindern */
+      overflow-x: auto;
+      overflow-y: hidden;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      margin-bottom: 60px;  /* Abstand zum unteren Bildschirmrand */
+      margin-bottom: 60px; /* Abstand zum unteren Bildschirmrand */
+      width: 120px;       /* Breite so, dass nur 1 Tab sichtbar ist */
+      margin-left: auto;  /* zentriert die Navigationsleiste horizontal */
+      margin-right: auto;
     }
 
     .tab {
-      flex: 0 0 auto;
-      padding: 0 1em;
+      flex: 0 0 120px;    /* fester Tab mit gleicher Breite */
+      padding: 0;
       text-align: center;
       line-height: 60px;
       cursor: pointer;
