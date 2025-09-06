@@ -8,5 +8,6 @@ Dies ist eine minimalistische, mobile Webseite mit Tabs unten und Swipe-Funktion
 - Dark Mode
 - Swipe links/rechts zwischen Kategorien
 - Tabs unten zum schnellen Wechsel
+- PWA-ready
 
 
