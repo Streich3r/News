@@ -3,10 +3,10 @@
   "short_name": "News",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#000c1a",
-  "theme_color": "#000c1a",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
   "icons": [
-   {
+    {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
