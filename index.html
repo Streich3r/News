@@ -5,20 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>News</title>
   
-  <!-- Manifest für PWA -->
   <link rel="manifest" href="manifest.webmanifest">
-
-  <!-- Favicons -->
   <link rel="icon" type="image/png" href="icon-512.png">
-
-  <!-- Apple Touch Icon -->
   <link rel="apple-touch-icon" href="icon-512.png">
 
-  <!-- Theme Colors -->
   <meta name="theme-color" content="#000c1a">
   <meta name="background-color" content="#000c1a">
-
-  <!-- Windows Tiles -->
   <meta name="msapplication-TileImage" content="icon-512.png">
   <meta name="msapplication-TileColor" content="#000c1a">
   
@@ -48,8 +40,7 @@
       display: flex;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth; /* smooth scrolling */
-      scroll-snap-stop: always; /* prevents skipping multiple tabs */
+      scroll-behavior: smooth;
     }
 
     .tab-content {
@@ -145,6 +136,9 @@
     const contentWrapper = document.getElementById('contentWrapper');
     const tabsWrapper = document.getElementById('tabs');
 
+    let lastScrollLeft = 0;
+    let lastTime = 0;
+
     function setActiveTab(index) {
       tabs.forEach(t => t.classList.remove('active'));
       if (tabs[index]) {
@@ -167,10 +161,44 @@
       });
     });
 
-    // 🔹 instant update on swipe
+    // Track swipe speed
     contentWrapper.addEventListener('scroll', () => {
+      const now = Date.now();
+      const deltaX = contentWrapper.scrollLeft - lastScrollLeft;
+      const deltaTime = now - lastTime;
+
+      contentWrapper.swipeSpeed = deltaX / (deltaTime || 1);
+
+      lastScrollLeft = contentWrapper.scrollLeft;
+      lastTime = now;
+
       const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
       setActiveTab(index);
+    });
+
+    // Snap to correct tab after swipe ends
+    let scrollTimeout;
+    contentWrapper.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const currentIndex = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
+        let targetIndex = currentIndex;
+
+        // If swipe was fast, skip an extra tab
+        if (Math.abs(contentWrapper.swipeSpeed) > 1.2) {
+          targetIndex = contentWrapper.swipeSpeed > 0 ? currentIndex + 1 : currentIndex - 1;
+        }
+
+        // Clamp within range
+        targetIndex = Math.max(0, Math.min(tabs.length - 1, targetIndex));
+
+        contentWrapper.scrollTo({
+          left: targetIndex * contentWrapper.clientWidth,
+          behavior: 'smooth'
+        });
+
+        setActiveTab(targetIndex);
+      }, 100); // wait until user lifts finger
     });
 
     // Initial
