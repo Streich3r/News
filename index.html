@@ -3,31 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>News mit Matrix-Regen</title>
-  
+  <title>News mit Matrix</title>
+
+  <!-- PWA Manifest & Icons -->
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-512.png">
-
   <meta name="theme-color" content="#000c1a">
   <meta name="background-color" content="#000c1a">
   <meta name="msapplication-TileImage" content="icon-512.png">
   <meta name="msapplication-TileColor" content="#000c1a">
-  
+
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
-      background-color: #000;
-      color: white;
       height: 100vh;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end; /* keep bottom-container at bottom */
     }
 
-    /* Matrix background */
+    /* Matrix Hintergrund */
     canvas#matrixCanvas {
       position: fixed;
       top: 0;
@@ -38,25 +33,34 @@
       z-index: 0;
     }
 
-    /* Foreground container */
-    .bottom-container {
-      position: relative;
-      z-index: 1;
+    /* Halbtransparente Overlay-Schicht */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 50vh; /* same as original */
+      height: 100%;
+      background: rgba(18, 18, 18, 0.85); /* durchsichtiges Schwarz */
+      backdrop-filter: blur(2px);
+      z-index: 1;
       display: flex;
       flex-direction: column;
-      background: rgba(18,18,18,0.85); /* semi-transparent */
-      backdrop-filter: blur(2px);
+      justify-content: flex-end; /* Inhalt bleibt unten */
+    }
+
+    .bottom-container {
+      width: 100%;
+      height: 50vh; /* alte Höhe */
+      display: flex;
+      flex-direction: column;
     }
 
     .content-wrapper {
       flex-grow: 1;
-      overflow-x: auto;
+      overflow-x: scroll;
       display: flex;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
     }
 
     .tab-content {
@@ -79,12 +83,14 @@
     }
 
     .tabs {
-      height: 60px; /* back to original */
+      height: 60px;
       background: rgba(30,30,30,0.9);
       border-top: 2px solid #03dac6;
       display: flex;
       overflow-x: auto;
       overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
       width: 100%;
     }
 
@@ -99,7 +105,6 @@
       user-select: none;
       box-sizing: border-box;
       scroll-snap-align: center;
-      transition: background 0.2s;
     }
 
     .tab.active {
@@ -110,49 +115,49 @@
 </head>
 <body>
 
-  <!-- Matrix Rain Background -->
+  <!-- Matrix Hintergrund -->
   <canvas id="matrixCanvas"></canvas>
 
-  <!-- Foreground App -->
-  <div class="bottom-container">
-    <div class="content-wrapper" id="contentWrapper">
-      <div class="tab-content" data-tab="de">
-        <a href="https://news.google.com/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRE0wTldnU0FtUmxLQUFQAQ?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News Deutschland</a>
-        <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
-        <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
-        <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
+  <!-- Overlay + App -->
+  <div class="overlay">
+    <div class="bottom-container">
+      <div class="content-wrapper" id="contentWrapper">
+        <div class="tab-content" data-tab="de">
+          <a href="https://news.google.com/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRE0wTldnU0FtUmxLQUFQAQ?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News Deutschland</a>
+          <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
+          <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
+          <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
+        </div>
+        <div class="tab-content" data-tab="int">
+          <a href="https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtUmxHZ0pFUlNnQVAB?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News International</a>
+          <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
+          <a href="https://www.reuters.com" target="_blank">Reuters</a>
+          <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
+        </div>
+        <div class="tab-content" data-tab="tech">
+          <a href="https://news.google.com/topics/CAAqKAgKIiJDQkFTRXdvSkwyMHZNR1ptZHpWbUVnSmtaUm9DUkVVb0FBUAE?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News Technik</a>
+          <a href="https://www.heise.de" target="_blank">heise online</a>
+          <a href="https://t3n.de" target="_blank">t3n</a>
+          <a href="https://www.golem.de" target="_blank">Golem.de</a>
+        </div>
+        <div class="tab-content" data-tab="media">
+          <a href="https://news.google.com/publications/CAAqBwgKMOfNwAswnv2lAw?hl=de&gl=DE&ceid=DE:de" target="_blank">Google News Medien</a>
+          <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
+          <a href="https://www.npr.org" target="_blank">NPR</a>
+        </div>
       </div>
-      <div class="tab-content" data-tab="int">
-        <a href="https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtUmxHZ0pFUlNnQVAB?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News International</a>
-        <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
-        <a href="https://www.reuters.com" target="_blank">Reuters</a>
-        <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
-      </div>
-      <div class="tab-content" data-tab="tech">
-        <a href="https://news.google.com/topics/CAAqKAgKIiJDQkFTRXdvSkwyMHZNR1ptZHpWbUVnSmtaUm9DUkVVb0FBUAE?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News Technik</a>
-        <a href="https://www.heise.de" target="_blank">heise online</a>
-        <a href="https://t3n.de" target="_blank">t3n</a>
-        <a href="https://www.golem.de" target="_blank">Golem.de</a>
-      </div>
-      <div class="tab-content" data-tab="media">
-        <a href="https://news.google.com/publications/CAAqBwgKMOfNwAswnv2lAw?hl=de&gl=DE&ceid=DE:de" target="_blank">Google News Medien</a>
-        <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
-        <a href="https://www.npr.org" target="_blank">NPR</a>
-      </div>
-    </div>
 
-    <div class="tabs" id="tabs">
-      <div class="tab active" data-index="0">Deutschland</div>
-      <div class="tab" data-index="1">International</div>
-      <div class="tab" data-index="2">Technik</div>
-      <div class="tab" data-index="3">Medien</div>
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-index="0">Deutschland</div>
+        <div class="tab" data-index="1">International</div>
+        <div class="tab" data-index="2">Technik</div>
+        <div class="tab" data-index="3">Medien</div>
+      </div>
     </div>
   </div>
 
   <script>
-    /* ---------------------
-       Matrix Rain Background
-    --------------------- */
+    /* Matrix Regen */
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
     function resizeCanvas(){
@@ -185,32 +190,22 @@
 
     setInterval(drawMatrix, 35);
 
-    /* ---------------------
-       News App Logic
-    --------------------- */
+    /* Tabs + Content Logik */
     const tabs = document.querySelectorAll('.tab');
     const contentWrapper = document.getElementById('contentWrapper');
     const tabsWrapper = document.getElementById('tabs');
 
-    let lastScrollLeft = 0;
-    let lastTime = 0;
-
-    function setActiveTab(index, animateNav = true) {
+    function setActiveTab(index) {
       tabs.forEach(t => t.classList.remove('active'));
       if (tabs[index]) {
         tabs[index].classList.add('active');
-        if (animateNav) {
-          tabsWrapper.scrollTo({
-            left: index * tabsWrapper.clientWidth,
-            behavior: 'smooth'
-          });
-        } else {
-          tabsWrapper.scrollLeft = index * tabsWrapper.clientWidth;
-        }
+        tabsWrapper.scrollTo({
+          left: index * tabsWrapper.clientWidth,
+          behavior: 'smooth'
+        });
       }
     }
 
-    // Tap navigation
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const index = parseInt(tab.dataset.index);
@@ -218,51 +213,20 @@
           left: index * contentWrapper.clientWidth,
           behavior: 'smooth'
         });
-        setActiveTab(index, false);
+        setActiveTab(index);
       });
     });
 
-    // Track swipe speed
+    let isScrolling;
     contentWrapper.addEventListener('scroll', () => {
-      const now = Date.now();
-      const deltaX = contentWrapper.scrollLeft - lastScrollLeft;
-      const deltaTime = now - lastTime;
-      contentWrapper.swipeSpeed = deltaX / (deltaTime || 1);
-
-      lastScrollLeft = contentWrapper.scrollLeft;
-      lastTime = now;
-
-      const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
-      setActiveTab(index, false);
+      clearTimeout(isScrolling);
+      isScrolling = setTimeout(() => {
+        const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
+        setActiveTab(index);
+      }, 100);
     });
 
-    // Snap after swipe ends
-    let scrollTimeout;
-    contentWrapper.addEventListener('scroll', () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const currentIndex = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
-        let targetIndex = currentIndex;
-
-        // Only very strong swipes skip extra tab
-        if (Math.abs(contentWrapper.swipeSpeed) > 8) {
-          targetIndex = contentWrapper.swipeSpeed > 0 ? currentIndex + 1 : currentIndex - 1;
-        }
-
-        // Clamp
-        targetIndex = Math.max(0, Math.min(tabs.length - 1, targetIndex));
-
-        contentWrapper.scrollTo({
-          left: targetIndex * contentWrapper.clientWidth,
-          behavior: 'smooth'
-        });
-
-        setActiveTab(targetIndex, false);
-      }, 120);
-    });
-
-    // Init
-    setActiveTab(0, false);
+    setActiveTab(0);
   </script>
 
 </body>
