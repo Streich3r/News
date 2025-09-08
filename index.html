@@ -4,23 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>News</title>
-   <!-- Manifest für PWA -->
+
+  <!-- Manifest für PWA -->
   <link rel="manifest" href="manifest.webmanifest">
 
-  <!-- Favicons für Browser -->
- <link rel="icon" type="image/png" href="icon-512.png">
-
-  <!-- Apple Touch Icon (iOS Homescreen) -->
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-512.png">
 
-  <!-- Theme-Farben für Browser-UI -->
+  <!-- Theme-Farben -->
   <meta name="theme-color" content="#000c1a">
   <meta name="background-color" content="#000c1a">
 
-  <!-- Optional: Windows Tile Icons -->
+  <!-- Windows Tile -->
   <meta name="msapplication-TileImage" content="icon-512.png">
   <meta name="msapplication-TileColor" content="#000c1a">
-  
+
   <style>
     body {
       margin: 0;
@@ -32,7 +31,6 @@
       flex-direction: column;
       justify-content: flex-end;
     }
-
     .bottom-container {
       width: 100%;
       height: 50vh;
@@ -40,15 +38,18 @@
       flex-direction: column;
       background: #121212;
     }
-
     .content-wrapper {
       flex-grow: 1;
       overflow-x: scroll;
       display: flex;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
-
+    .content-wrapper::-webkit-scrollbar {
+      display: none;
+    }
     .tab-content {
       flex: 0 0 100%;
       scroll-snap-align: center;
@@ -56,32 +57,27 @@
       padding: 1em;
       box-sizing: border-box;
     }
-
     a {
       color: #03a9f4;
       text-decoration: none;
       display: block;
       margin: 0.5em 0;
     }
-
     a:hover {
       text-decoration: underline;
     }
-
     .tabs {
       height: 60px;
       background: #1e1e1e;
       border-top: 2px solid #03dac6;
       display: flex;
       overflow-x: auto;
-      overflow-y: hidden; /* kein vertikales Scrollen */
+      overflow-y: hidden;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       margin-bottom: 60px;
       width: 100%;
     }
-
-    /* Jedes Tab nimmt 100% der Breite ein, damit immer nur ein Tab sichtbar ist */
     .tab {
       flex: 0 0 100%;
       padding: 0 1em;
@@ -92,9 +88,8 @@
       border-top: 2px solid transparent;
       user-select: none;
       box-sizing: border-box;
-      scroll-snap-align: center; /* damit Snap mittig ist */
+      scroll-snap-align: center;
     }
-
     .tab.active {
       border-top: 2px solid #03dac6;
       background: #282828;
@@ -105,25 +100,25 @@
 
   <div class="bottom-container">
     <div class="content-wrapper" id="contentWrapper">
-      <div class="tab-content" data-tab="de">
+      <div class="tab-content">
         <a href="https://news.google.com/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRE0wTldnU0FtUmxLQUFQAQ?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News Deutschland</a>
         <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
         <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
         <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
       </div>
-      <div class="tab-content" data-tab="int">
+      <div class="tab-content">
         <a href="https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtUmxHZ0pFUlNnQVAB?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News International</a>
         <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
         <a href="https://www.reuters.com" target="_blank">Reuters</a>
         <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
       </div>
-      <div class="tab-content" data-tab="tech">
+      <div class="tab-content">
         <a href="https://news.google.com/topics/CAAqKAgKIiJDQkFTRXdvSkwyMHZNR1ptZHpWbUVnSmtaUm9DUkVVb0FBUAE?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News Technik</a>
         <a href="https://www.heise.de" target="_blank">heise online</a>
         <a href="https://t3n.de" target="_blank">t3n</a>
         <a href="https://www.golem.de" target="_blank">Golem.de</a>
       </div>
-      <div class="tab-content" data-tab="media">
+      <div class="tab-content">
         <a href="https://news.google.com/publications/CAAqBwgKMOfNwAswnv2lAw?hl=de&gl=DE&ceid=DE:de" target="_blank">Google News Medien</a>
         <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
         <a href="https://www.npr.org" target="_blank">NPR</a>
@@ -147,8 +142,6 @@
       tabs.forEach(t => t.classList.remove('active'));
       if (tabs[index]) {
         tabs[index].classList.add('active');
-        // Scrollt den aktiven Tab horizontal mittig — 
-        // Da jeder Tab 100% breit ist, scrollt das Ganze auf left = index * tabsWrapper.clientWidth
         tabsWrapper.scrollTo({
           left: index * tabsWrapper.clientWidth,
           behavior: 'smooth'
@@ -159,24 +152,53 @@
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const index = parseInt(tab.dataset.index);
-        contentWrapper.scrollTo({
-          left: index * contentWrapper.clientWidth,
-          behavior: 'smooth'
-        });
-        setActiveTab(index);
+        smoothScrollTo(index);
       });
     });
 
-    let isScrolling;
-    contentWrapper.addEventListener('scroll', () => {
-      clearTimeout(isScrolling);
-      isScrolling = setTimeout(() => {
-        const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
-        setActiveTab(index);
-      }, 100);
+    let startScroll = 0;
+    let isTouching = false;
+
+    contentWrapper.addEventListener('touchstart', () => {
+      isTouching = true;
+      startScroll = contentWrapper.scrollLeft;
     });
 
-    // Initial sicherstellen, dass der erste Tab mittig ist
+    contentWrapper.addEventListener('touchend', () => {
+      isTouching = false;
+      const pageWidth = contentWrapper.clientWidth;
+      let index = Math.round(contentWrapper.scrollLeft / pageWidth);
+      smoothScrollTo(index);
+    });
+
+    // Sofortige Aktualisierung der Navigation beim Wischen
+    contentWrapper.addEventListener('scroll', () => {
+      const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
+      setActiveTab(index);
+    });
+
+    function smoothScrollTo(index) {
+      const target = index * contentWrapper.clientWidth;
+      const start = contentWrapper.scrollLeft;
+      const distance = target - start;
+      const duration = 500; // langsameres Einrasten
+      let startTime = null;
+
+      function animation(currentTime) {
+        if (!startTime) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+        const ease = 0.5 - Math.cos(progress * Math.PI) / 2;
+        contentWrapper.scrollLeft = start + distance * ease;
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animation);
+        } else {
+          setActiveTab(index);
+        }
+      }
+      requestAnimationFrame(animation);
+    }
+
     setActiveTab(0);
   </script>
 
