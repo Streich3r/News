@@ -4,11 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>News</title>
-   <!-- Manifest für PWA -->
+
+  <!-- Manifest für PWA -->
   <link rel="manifest" href="manifest.webmanifest">
 
   <!-- Favicons für Browser -->
- <link rel="icon" type="image/png" href="icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 
   <!-- Apple Touch Icon (iOS Homescreen) -->
   <link rel="apple-touch-icon" href="icon-512.png">
@@ -74,14 +76,13 @@
       border-top: 2px solid #03dac6;
       display: flex;
       overflow-x: auto;
-      overflow-y: hidden; /* kein vertikales Scrollen */
+      overflow-y: hidden;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       margin-bottom: 60px;
       width: 100%;
     }
 
-    /* Jedes Tab nimmt 100% der Breite ein, damit immer nur ein Tab sichtbar ist */
     .tab {
       flex: 0 0 100%;
       padding: 0 1em;
@@ -92,7 +93,7 @@
       border-top: 2px solid transparent;
       user-select: none;
       box-sizing: border-box;
-      scroll-snap-align: center; /* damit Snap mittig ist */
+      scroll-snap-align: center;
     }
 
     .tab.active {
@@ -147,11 +148,9 @@
       tabs.forEach(t => t.classList.remove('active'));
       if (tabs[index]) {
         tabs[index].classList.add('active');
-        // Scrollt den aktiven Tab horizontal mittig — 
-        // Da jeder Tab 100% breit ist, scrollt das Ganze auf left = index * tabsWrapper.clientWidth
         tabsWrapper.scrollTo({
           left: index * tabsWrapper.clientWidth,
-          behavior: 'smooth'
+          behavior: 'auto'
         });
       }
     }
@@ -161,22 +160,18 @@
         const index = parseInt(tab.dataset.index);
         contentWrapper.scrollTo({
           left: index * contentWrapper.clientWidth,
-          behavior: 'smooth'
+          behavior: 'auto' // sofort springen
         });
         setActiveTab(index);
       });
     });
 
-    let isScrolling;
+    // Sofortige Aktualisierung beim Wischen
     contentWrapper.addEventListener('scroll', () => {
-      clearTimeout(isScrolling);
-      isScrolling = setTimeout(() => {
-        const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
-        setActiveTab(index);
-      }, 100);
+      const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
+      setActiveTab(index);
     });
 
-    // Initial sicherstellen, dass der erste Tab mittig ist
     setActiveTab(0);
   </script>
 
