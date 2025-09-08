@@ -1,346 +1,181 @@
-
- <!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="de">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>News</title>
-
+  
   <!-- Manifest für PWA -->
   <link rel="manifest" href="manifest.webmanifest">
 
   <!-- Favicons -->
   <link rel="icon" type="image/png" href="icon-512.png">
+
+  <!-- Apple Touch Icon -->
   <link rel="apple-touch-icon" href="icon-512.png">
 
-  <!-- Theme-Farben -->
+  <!-- Theme Colors -->
   <meta name="theme-color" content="#000c1a">
   <meta name="background-color" content="#000c1a">
 
-  <!-- Windows Tile -->
+  <!-- Windows Tiles -->
   <meta name="msapplication-TileImage" content="icon-512.png">
   <meta name="msapplication-TileColor" content="#000c1a">
-
+  
   <style>
-    :root {
-      --bg: #0f1115;
-      --panel: #141822;
-      --ink: #e8eefc;
-      --muted: #9aa6c8;
-      --brand: #6aa1ff;
-      --brand-weak: rgba(106,161,255,0.2);
-      --ring: 0 0 0 2px var(--brand-weak);
-    }
-
-    * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      color: var(--ink);
-      background: linear-gradient(180deg, #0b0d12, #0f1115);
-      height: 100dvh;
+      font-family: sans-serif;
+      background-color: #121212;
+      color: white;
+      height: 100vh;
       display: flex;
       flex-direction: column;
+      justify-content: flex-end;
     }
 
-    /* Top bar with tabs */
-    .tabs-bar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: rgba(15,17,21,0.8);
-      backdrop-filter: saturate(140%) blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .tabs {
+    .bottom-container {
+      width: 100%;
+      height: 50vh;
       display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 10px 12px;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    .tabs::-webkit-scrollbar { display: none; }
-
-    .tab {
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      cursor: pointer;
-      color: var(--muted);
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      letter-spacing: 0.2px;
-      transition: color .2s ease, background .2s ease, border-color .2s ease, transform .12s ease;
-      white-space: nowrap;
-    }
-    .tab:hover { color: var(--ink); border-color: rgba(255,255,255,0.16); }
-    .tab:active { transform: translateY(1px); }
-    .tab.active {
-      color: var(--ink);
-      background: rgba(106,161,255,0.12);
-      border-color: rgba(106,161,255,0.35);
-      box-shadow: var(--ring);
-    }
-
-    /* Content area */
-    .viewport {
-      flex: 1;
-      min-height: 0; /* enable proper flexbox scroll sizing */
-      position: relative;
-      overflow: hidden; /* mask edges during animation */
+      flex-direction: column;
+      background: #121212;
     }
 
     .content-wrapper {
-      height: 100%;
+      flex-grow: 1;
+      overflow-x: auto;
       display: flex;
-      overflow-x: auto;               /* allow drag/gesture scroll */
-      overflow-y: hidden;
-      scroll-behavior: auto;          /* we animate manually */
-      -webkit-overflow-scrolling: auto; /* disable iOS momentum fling */
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth; /* smooth scrolling */
+      scroll-snap-stop: always; /* prevents skipping multiple tabs */
     }
-    .content-wrapper::-webkit-scrollbar { display: none; }
 
-    .panel {
+    .tab-content {
       flex: 0 0 100%;
-      height: 100%;
-      padding: 20px;
-      display: grid;
-      align-content: start;
-      gap: 14px;
-      background:
-        radial-gradient(1200px 400px at 10% -100%, rgba(106,161,255,0.12), transparent 60%),
-        radial-gradient(1200px 400px at 90% -120%, rgba(106,161,255,0.08), transparent 60%),
-        var(--panel);
-      border-right: 1px solid rgba(255,255,255,0.06);
-    }
-    .panel:last-child { border-right: none; }
-
-    .panel h2 {
-      margin: 6px 0 2px;
-      font-size: 20px;
-      letter-spacing: 0.2px;
-    }
-    .panel p {
-      color: var(--muted);
-      margin: 0;
-      line-height: 1.5;
+      scroll-snap-align: center;
+      overflow-y: auto;
+      padding: 1em;
+      box-sizing: border-box;
     }
 
-    /* Small helper: center big examples gracefully */
-    .card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 14px;
+    a {
+      color: #03a9f4;
+      text-decoration: none;
+      display: block;
+      margin: 0.5em 0;
     }
 
-    /* Buttons in content */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(106,161,255,0.12);
-      color: var(--ink);
-      border: 1px solid rgba(106,161,255,0.35);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-weight: 600;
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .tabs {
+      height: 60px;
+      background: #1e1e1e;
+      border-top: 2px solid #03dac6;
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 60px;
+      width: 100%;
+    }
+
+    .tab {
+      flex: 0 0 100%;
+      padding: 0 1em;
+      text-align: center;
+      line-height: 60px;
       cursor: pointer;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+      white-space: nowrap;
+      border-top: 2px solid transparent;
+      user-select: none;
+      box-sizing: border-box;
+      scroll-snap-align: center;
     }
-    .btn:hover { background: rgba(106,161,255,0.18); border-color: rgba(106,161,255,0.5); }
-    .btn:active { transform: translateY(1px); }
 
-    @media (min-width: 992px) {
-      .panel {
-        padding: 28px 32px;
-      }
+    .tab.active {
+      border-top: 2px solid #03dac6;
+      background: #282828;
     }
   </style>
 </head>
 <body>
-  <header class="tabs-bar">
-    <nav id="tabs" class="tabs" aria-label="Sections">
-      <button class="tab active" data-index="0" type="button">Overview</button>
-      <button class="tab" data-index="1" type="button">Details</button>
-      <button class="tab" data-index="2" type="button">Insights</button>
-      <button class="tab" data-index="3" type="button">Activity</button>
-      <button class="tab" data-index="4" type="button">Settings</button>
-    </nav>
-  </header>
 
-  <main class="viewport">
-    <section id="contentWrapper" class="content-wrapper" aria-live="polite">
-      <article class="panel" role="group" aria-roledescription="slide" aria-label="Overview">
-        <h2>Overview</h2>
-        <p>Swipe or use the tabs. Animation speed is controlled, no browser momentum fling. The nav updates instantly as you drag.</p>
-        <div class="card">
-          <p><strong>Tip:</strong> Increase animation duration in the script to slow it down more.</p>
-        </div>
-      </article>
+  <div class="bottom-container">
+    <div class="content-wrapper" id="contentWrapper">
+      <div class="tab-content" data-tab="de">
+        <a href="https://news.google.com/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRE0wTldnU0FtUmxLQUFQAQ?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News Deutschland</a>
+        <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
+        <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
+        <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
+      </div>
+      <div class="tab-content" data-tab="int">
+        <a href="https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtUmxHZ0pFUlNnQVAB?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News International</a>
+        <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
+        <a href="https://www.reuters.com" target="_blank">Reuters</a>
+        <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
+      </div>
+      <div class="tab-content" data-tab="tech">
+        <a href="https://news.google.com/topics/CAAqKAgKIiJDQkFTRXdvSkwyMHZNR1ptZHpWbUVnSmtaUm9DUkVVb0FBUAE?hl=de&gl=DE&ceid=DE%3Ade" target="_blank">Google News Technik</a>
+        <a href="https://www.heise.de" target="_blank">heise online</a>
+        <a href="https://t3n.de" target="_blank">t3n</a>
+        <a href="https://www.golem.de" target="_blank">Golem.de</a>
+      </div>
+      <div class="tab-content" data-tab="media">
+        <a href="https://news.google.com/publications/CAAqBwgKMOfNwAswnv2lAw?hl=de&gl=DE&ceid=DE:de" target="_blank">Google News Medien</a>
+        <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
+        <a href="https://www.npr.org" target="_blank">NPR</a>
+      </div>
+    </div>
 
-      <article class="panel" role="group" aria-roledescription="slide" aria-label="Details">
-        <h2>Details</h2>
-        <p>JavaScript handles snapping. No CSS scroll-snap is used, so there’s no browser/JS tug-of-war.</p>
-        <button class="btn" type="button" onclick="alert('Action example')">Action</button>
-      </article>
-
-      <article class="panel" role="group" aria-roledescription="slide" aria-label="Insights">
-        <h2>Insights</h2>
-        <p>Dragging updates the active tab continuously. Releasing snaps to the nearest panel at a fixed, smooth pace.</p>
-      </article>
-
-      <article class="panel" role="group" aria-roledescription="slide" aria-label="Activity">
-        <h2>Activity</h2>
-        <p>Content paints stay stable because only one animation controls movement.</p>
-      </article>
-
-      <article class="panel" role="group" aria-roledescription="slide" aria-label="Settings">
-        <h2>Settings</h2>
-        <p>Tweak the duration constant to match your brand’s feel. Try 700–900 ms for calmer motion.</p>
-      </article>
-    </section>
-  </main>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-index="0">Deutschland</div>
+      <div class="tab" data-index="1">International</div>
+      <div class="tab" data-index="2">Technik</div>
+      <div class="tab" data-index="3">Medien</div>
+    </div>
+  </div>
 
   <script>
-    // Elements
-    const tabs = Array.from(document.querySelectorAll('.tab'));
-    const tabsWrapper = document.getElementById('tabs');
+    const tabs = document.querySelectorAll('.tab');
     const contentWrapper = document.getElementById('contentWrapper');
-
-    // State
-    let activeIndex = 0;
-    let isTouching = false;
-    let animating = false;
-    let rafId = null;
-
-    // Helpers
-    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+    const tabsWrapper = document.getElementById('tabs');
 
     function setActiveTab(index) {
-      if (index === activeIndex) return;
-      activeIndex = index;
       tabs.forEach(t => t.classList.remove('active'));
-      const t = tabs[index];
-      if (t) {
-        t.classList.add('active');
-        // Ensure active tab stays in view in the horizontal tab list
-        const tRect = t.getBoundingClientRect();
-        const barRect = tabsWrapper.getBoundingClientRect();
-        if (tRect.left < barRect.left || tRect.right > barRect.right) {
-          tabsWrapper.scrollTo({
-            left: t.offsetLeft - 16,
-            behavior: 'smooth'
-          });
-        }
+      if (tabs[index]) {
+        tabs[index].classList.add('active');
+        tabsWrapper.scrollTo({
+          left: index * tabsWrapper.clientWidth,
+          behavior: 'smooth'
+        });
       }
     }
 
-    function cancelAnimation() {
-      animating = false;
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-
-    function smoothScrollTo(index, opts = {}) {
-      const duration = typeof opts.duration === 'number' ? opts.duration : 600; // ms
-      const target = index * contentWrapper.clientWidth;
-      const start = contentWrapper.scrollLeft;
-      const distance = target - start;
-
-      if (Math.abs(distance) < 1) {
-        contentWrapper.scrollLeft = target;
-        setActiveTab(index);
-        return;
-      }
-
-      cancelAnimation();
-      animating = true;
-      let startTime = null;
-
-      function frame(ts) {
-        if (!startTime) startTime = ts;
-        const elapsed = ts - startTime;
-        const progress = clamp(elapsed / duration, 0, 1);
-        // Ease in-out (cosine)
-        const ease = 0.5 - Math.cos(progress * Math.PI) / 2;
-        contentWrapper.scrollLeft = start + distance * ease;
-
-        // Update nav during animation to keep it feeling alive
-        const liveIndex = clamp(Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth), 0, tabs.length - 1);
-        if (liveIndex !== activeIndex) {
-          setActiveTab(liveIndex);
-        }
-
-        if (progress < 1 && animating) {
-          rafId = requestAnimationFrame(frame);
-        } else {
-          animating = false;
-          contentWrapper.scrollLeft = target;
-          setActiveTab(index);
-        }
-      }
-      rafId = requestAnimationFrame(frame);
-    }
-
-    // Tab clicks
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        const index = Number(tab.dataset.index) || 0;
-        smoothScrollTo(index);
+        const index = parseInt(tab.dataset.index);
+        contentWrapper.scrollTo({
+          left: index * contentWrapper.clientWidth,
+          behavior: 'smooth'
+        });
+        setActiveTab(index);
       });
     });
 
-    // Touch/drag handling
-    contentWrapper.addEventListener('touchstart', () => {
-      isTouching = true;
-      cancelAnimation(); // stop any ongoing JS animation immediately
-    }, { passive: true });
-
-    contentWrapper.addEventListener('touchend', () => {
-      isTouching = false;
-      const nearest = clamp(Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth), 0, tabs.length - 1);
-      smoothScrollTo(nearest);
-    });
-
-    // Instant nav update while dragging (and while animating)
+    // 🔹 instant update on swipe
     contentWrapper.addEventListener('scroll', () => {
-      const idx = clamp(Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth), 0, tabs.length - 1);
-      if (idx !== activeIndex) setActiveTab(idx);
-    }, { passive: true });
-
-    // Keep layout robust on resize/orientation
-    let resizeTicking = false;
-    window.addEventListener('resize', () => {
-      if (resizeTicking) return;
-      resizeTicking = true;
-      requestAnimationFrame(() => {
-        // Re-center the active panel on new width
-        contentWrapper.scrollLeft = activeIndex * contentWrapper.clientWidth;
-        resizeTicking = false;
-      });
+      const index = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
+      setActiveTab(index);
     });
 
-    // Initialize
-    // Ensure correct button data-index and ARIA for robustness
-    tabs.forEach((t, i) => { t.dataset.index = String(i); t.setAttribute('aria-selected', i === 0 ? 'true' : 'false'); });
+    // Initial
     setActiveTab(0);
-    contentWrapper.scrollLeft = 0;
-
-    // Keep aria-selected in sync
-    const observer = new MutationObserver(() => {
-      tabs.forEach((t, i) => t.setAttribute('aria-selected', t.classList.contains('active') ? 'true' : 'false'));
-    });
-    observer.observe(tabsWrapper, { attributes: true, subtree: true, attributeFilter: ['class'] });
   </script>
+
 </body>
 </html>
-
