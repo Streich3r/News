@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>News</title>
+  <title>News mit Matrix-Regen</title>
   
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" href="icon-512.png">
@@ -18,20 +18,33 @@
     body {
       margin: 0;
       font-family: sans-serif;
-      background-color: #121212;
+      background-color: #000;
       color: white;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
+      overflow: hidden;
     }
 
+    /* Matrix background */
+    canvas#matrixCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 0;
+    }
+
+    /* Foreground container */
     .bottom-container {
+      position: relative;
+      z-index: 1;
       width: 100%;
       height: 50vh;
       display: flex;
       flex-direction: column;
-      background: #121212;
+      background: rgba(18,18,18,0.85); /* slightly transparent */
+      backdrop-filter: blur(2px);
     }
 
     .content-wrapper {
@@ -64,13 +77,11 @@
 
     .tabs {
       height: 60px;
-      background: #1e1e1e;
+      background: rgba(30,30,30,0.9);
       border-top: 2px solid #03dac6;
       display: flex;
       overflow-x: auto;
       overflow-y: hidden;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
       margin-bottom: 60px;
       width: 100%;
     }
@@ -91,12 +102,16 @@
 
     .tab.active {
       border-top: 2px solid #03dac6;
-      background: #282828;
+      background: rgba(40,40,40,0.9);
     }
   </style>
 </head>
 <body>
 
+  <!-- Matrix Rain Background -->
+  <canvas id="matrixCanvas"></canvas>
+
+  <!-- Foreground App -->
   <div class="bottom-container">
     <div class="content-wrapper" id="contentWrapper">
       <div class="tab-content" data-tab="de">
@@ -133,6 +148,44 @@
   </div>
 
   <script>
+    /* ---------------------
+       Matrix Rain Background
+    --------------------- */
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*';
+    const fontSize = 16;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    function drawMatrix(){
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0f0';
+      ctx.font = fontSize + 'px monospace';
+
+      for(let i = 0; i < drops.length; i++){
+        const text = letters.charAt(Math.floor(Math.random() * letters.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975){
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawMatrix, 35);
+
+    /* ---------------------
+       News App Logic
+    --------------------- */
     const tabs = document.querySelectorAll('.tab');
     const contentWrapper = document.getElementById('contentWrapper');
     const tabsWrapper = document.getElementById('tabs');
@@ -155,7 +208,7 @@
       }
     }
 
-    // Tap on nav bar tab
+    // Tap navigation
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const index = parseInt(tab.dataset.index);
@@ -163,7 +216,6 @@
           left: index * contentWrapper.clientWidth,
           behavior: 'smooth'
         });
-        // 👇 don't animate nav bar again, just update instantly
         setActiveTab(index, false);
       });
     });
@@ -173,7 +225,6 @@
       const now = Date.now();
       const deltaX = contentWrapper.scrollLeft - lastScrollLeft;
       const deltaTime = now - lastTime;
-
       contentWrapper.swipeSpeed = deltaX / (deltaTime || 1);
 
       lastScrollLeft = contentWrapper.scrollLeft;
@@ -183,7 +234,7 @@
       setActiveTab(index, false);
     });
 
-    // Snap to correct tab after swipe ends
+    // Snap after swipe ends
     let scrollTimeout;
     contentWrapper.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
@@ -191,8 +242,8 @@
         const currentIndex = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
         let targetIndex = currentIndex;
 
-        // ✅ higher threshold, only really hard swipes fly through
-        if (Math.abs(contentWrapper.swipeSpeed) > 3) {
+        // 👇 much stricter: only super hard swipes fly
+        if (Math.abs(contentWrapper.swipeSpeed) > 8) {
           targetIndex = contentWrapper.swipeSpeed > 0 ? currentIndex + 1 : currentIndex - 1;
         }
 
@@ -208,7 +259,7 @@
       }, 120);
     });
 
-    // Initial
+    // Init
     setActiveTab(0, false);
   </script>
 
