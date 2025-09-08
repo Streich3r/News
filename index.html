@@ -3,17 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>News with Nav Button</title>
-
+  <title>News with Matrix + Swipeable Nav</title>
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #121212;
-      color: white;
       height: 100vh;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* Matrix background */
+    canvas#matrixCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background: black;
+    }
+
+    /* Semi-transparent overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(18,18,18,0.85);
+      backdrop-filter: blur(2px);
+      z-index: 1;
       display: flex;
       flex-direction: column;
+      justify-content: flex-end;
     }
 
     /* Content area */
@@ -69,16 +92,20 @@
       background: #04c2aa;
     }
 
-    /* Hidden tab bar */
+    /* Hidden swipeable tab bar */
     .tabs {
       position: fixed;
-      bottom: -70px; /* start hidden below */
+      bottom: -70px;
       left: 0;
       width: 100%;
       height: 60px;
-      background: rgba(30,30,30,0.95);
+      background: rgba(30,30,30,0.8);
       display: flex;
-      justify-content: space-around;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      justify-content: flex-start;
       align-items: center;
       border-top: 2px solid #03dac6;
       transition: bottom 0.4s ease;
@@ -86,15 +113,19 @@
     }
 
     .tabs.show {
-      bottom: 90px; /* slide up above button */
+      bottom: 90px;
     }
 
     .tab {
+      flex: 0 0 auto;
       padding: 0.5em 1em;
       cursor: pointer;
       white-space: nowrap;
       border-radius: 8px;
+      margin: 0 5px;
       transition: background 0.3s;
+      scroll-snap-align: start;
+      color: white;
     }
 
     .tab:hover {
@@ -108,50 +139,86 @@
   </style>
 </head>
 <body>
-  <div class="content-wrapper">
-    <div class="tab-content active" data-tab="0">
-      <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
-      <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
-      <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
-    </div>
-    <div class="tab-content" data-tab="1">
-      <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
-      <a href="https://www.reuters.com" target="_blank">Reuters</a>
-      <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
-    </div>
-    <div class="tab-content" data-tab="2">
-      <a href="https://www.heise.de" target="_blank">heise online</a>
-      <a href="https://t3n.de" target="_blank">t3n</a>
-      <a href="https://www.golem.de" target="_blank">Golem.de</a>
-    </div>
-    <div class="tab-content" data-tab="3">
-      <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
-      <a href="https://www.npr.org" target="_blank">NPR</a>
-    </div>
-  </div>
 
-  <!-- Navigation button -->
-  <div class="nav-button" id="navButton">
-    ☰
-  </div>
+  <!-- Matrix Canvas -->
+  <canvas id="matrixCanvas"></canvas>
 
-  <!-- Hidden tab bar -->
-  <div class="tabs" id="tabs">
-    <div class="tab active" data-index="0">Deutschland</div>
-    <div class="tab" data-index="1">International</div>
-    <div class="tab" data-index="2">Technik</div>
-    <div class="tab" data-index="3">Medien</div>
+  <div class="overlay">
+    <div class="content-wrapper">
+      <div class="tab-content active" data-tab="0">
+        <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
+        <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
+        <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
+      </div>
+      <div class="tab-content" data-tab="1">
+        <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
+        <a href="https://www.reuters.com" target="_blank">Reuters</a>
+        <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
+      </div>
+      <div class="tab-content" data-tab="2">
+        <a href="https://www.heise.de" target="_blank">heise online</a>
+        <a href="https://t3n.de" target="_blank">t3n</a>
+        <a href="https://www.golem.de" target="_blank">Golem.de</a>
+      </div>
+      <div class="tab-content" data-tab="3">
+        <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
+        <a href="https://www.npr.org" target="_blank">NPR</a>
+      </div>
+    </div>
+
+    <!-- Bottom button -->
+    <div class="nav-button" id="navButton">☰</div>
+
+    <!-- Swipeable tab bar -->
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-index="0">Deutschland</div>
+      <div class="tab" data-index="1">International</div>
+      <div class="tab" data-index="2">Technik</div>
+      <div class="tab" data-index="3">Medien</div>
+    </div>
   </div>
 
   <script>
+    /* ===== Matrix Regen ===== */
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*';
+    const fontSize = 16;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    function drawMatrix(){
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#0f0';
+      ctx.font = fontSize+'px monospace';
+      for(let i=0;i<drops.length;i++){
+        const text = letters.charAt(Math.floor(Math.random()*letters.length));
+        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975){
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawMatrix,35);
+
+    /* ===== Tabs logic ===== */
     const navButton = document.getElementById('navButton');
     const tabsBar = document.getElementById('tabs');
     const tabs = document.querySelectorAll('.tab');
     const contents = document.querySelectorAll('.tab-content');
-
     let tabsVisible = false;
 
-    // Toggle tab bar
     navButton.addEventListener('click', () => {
       tabsVisible = !tabsVisible;
       if (tabsVisible) {
@@ -161,23 +228,30 @@
       }
     });
 
-    // Switch content
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const index = parseInt(tab.dataset.index);
-
-        // activate tab
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        // show content
+        // Activate content
         contents.forEach(c => c.classList.remove('active'));
         contents[index].classList.add('active');
-
-        // hide nav bar smoothly
+        // Activate tab
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        // Hide tab bar
         tabsVisible = false;
         tabsBar.classList.remove('show');
       });
+    });
+
+    // Swipe behavior for tab bar
+    let startX = 0, scrollStart = 0;
+    tabsBar.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      scrollStart = tabsBar.scrollLeft;
+    });
+    tabsBar.addEventListener('touchmove', e => {
+      const dx = startX - e.touches[0].clientX;
+      tabsBar.scrollLeft = scrollStart + dx;
     });
   </script>
 </body>
