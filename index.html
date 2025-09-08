@@ -40,11 +40,10 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      height: 50vh;
+      height: 50vh; /* original height */
       display: flex;
       flex-direction: column;
-      background: rgba(18,18,18,0.85); /* slightly transparent */
-      backdrop-filter: blur(2px);
+      background: #121212; /* back to solid like original */
     }
 
     .content-wrapper {
@@ -76,13 +75,13 @@
     }
 
     .tabs {
-      height: 60px;
-      background: rgba(30,30,30,0.9);
+      height: 60px; /* original size */
+      background: #1e1e1e; /* back to original */
       border-top: 2px solid #03dac6;
       display: flex;
       overflow-x: auto;
       overflow-y: hidden;
-      margin-bottom: 60px;
+      margin-bottom: 60px; /* original bottom spacing */
       width: 100%;
     }
 
@@ -102,7 +101,7 @@
 
     .tab.active {
       border-top: 2px solid #03dac6;
-      background: rgba(40,40,40,0.9);
+      background: #282828; /* back to original */
     }
   </style>
 </head>
@@ -242,7 +241,7 @@
         const currentIndex = Math.round(contentWrapper.scrollLeft / contentWrapper.clientWidth);
         let targetIndex = currentIndex;
 
-        // 👇 much stricter: only super hard swipes fly
+        // Only very strong swipes skip extra tab
         if (Math.abs(contentWrapper.swipeSpeed) > 8) {
           targetIndex = contentWrapper.swipeSpeed > 0 ? currentIndex + 1 : currentIndex - 1;
         }
