@@ -3,55 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>News mit Matrix</title>
+  <title>News with Nav Button</title>
 
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
+      background: #121212;
+      color: white;
       height: 100vh;
-      overflow: hidden;
-    }
-
-    /* Matrix Hintergrund */
-    canvas#matrixCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      z-index: 0;
-    }
-
-    /* Overlay */
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(18, 18, 18, 0.85);
-      backdrop-filter: blur(2px);
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-    }
-
-    .bottom-container {
-      width: 100%;
-      height: 50vh;
       display: flex;
       flex-direction: column;
     }
 
+    /* Content area */
     .content-wrapper {
       flex-grow: 1;
-      overflow-x: auto;
       display: flex;
-      /* Snap deaktivieren, wir machen es manuell */
-      scroll-behavior: smooth;
+      overflow: hidden;
     }
 
     .tab-content {
@@ -59,6 +28,11 @@
       overflow-y: auto;
       padding: 1em;
       box-sizing: border-box;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
     }
 
     a {
@@ -72,165 +46,139 @@
       text-decoration: underline;
     }
 
-    .tabs {
+    /* Bottom nav button */
+    .nav-button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
       height: 60px;
-      background: rgba(30,30,30,0.9);
-      border-top: 2px solid #03dac6;
+      border-radius: 50%;
+      background: #03dac6;
       display: flex;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+
+    .nav-button:hover {
+      background: #04c2aa;
+    }
+
+    /* Hidden tab bar */
+    .tabs {
+      position: fixed;
+      bottom: -70px; /* start hidden below */
+      left: 0;
       width: 100%;
-      margin-bottom: 60px; /* ✅ alter Abstand wieder */
+      height: 60px;
+      background: rgba(30,30,30,0.95);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 2px solid #03dac6;
+      transition: bottom 0.4s ease;
+      z-index: 9;
+    }
+
+    .tabs.show {
+      bottom: 90px; /* slide up above button */
     }
 
     .tab {
-      flex: 0 0 100%;
-      padding: 0 1em;
-      text-align: center;
-      line-height: 60px;
+      padding: 0.5em 1em;
       cursor: pointer;
       white-space: nowrap;
-      border-top: 2px solid transparent;
-      user-select: none;
-      box-sizing: border-box;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    .tab:hover {
+      background: rgba(255,255,255,0.1);
     }
 
     .tab.active {
-      border-top: 2px solid #03dac6;
-      background: rgba(40,40,40,0.9);
+      color: #03dac6;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-
-  <!-- Matrix Hintergrund -->
-  <canvas id="matrixCanvas"></canvas>
-
-  <!-- Overlay + App -->
-  <div class="overlay">
-    <div class="bottom-container">
-      <div class="content-wrapper" id="contentWrapper">
-        <div class="tab-content">
-          <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
-          <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
-          <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
-        </div>
-        <div class="tab-content">
-          <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
-          <a href="https://www.reuters.com" target="_blank">Reuters</a>
-          <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
-        </div>
-        <div class="tab-content">
-          <a href="https://www.heise.de" target="_blank">heise online</a>
-          <a href="https://t3n.de" target="_blank">t3n</a>
-          <a href="https://www.golem.de" target="_blank">Golem.de</a>
-        </div>
-        <div class="tab-content">
-          <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
-          <a href="https://www.npr.org" target="_blank">NPR</a>
-        </div>
-      </div>
-
-      <div class="tabs" id="tabs">
-        <div class="tab active" data-index="0">Deutschland</div>
-        <div class="tab" data-index="1">International</div>
-        <div class="tab" data-index="2">Technik</div>
-        <div class="tab" data-index="3">Medien</div>
-      </div>
+  <div class="content-wrapper">
+    <div class="tab-content active" data-tab="0">
+      <a href="https://www.tagesschau.de" target="_blank">Tagesschau</a>
+      <a href="https://www.sueddeutsche.de" target="_blank">Süddeutsche</a>
+      <a href="https://www.zeit.de" target="_blank">Die Zeit</a>
+    </div>
+    <div class="tab-content" data-tab="1">
+      <a href="https://www.bbc.com/news" target="_blank">BBC News</a>
+      <a href="https://www.reuters.com" target="_blank">Reuters</a>
+      <a href="https://www.nzz.ch/international" target="_blank">NZZ International</a>
+    </div>
+    <div class="tab-content" data-tab="2">
+      <a href="https://www.heise.de" target="_blank">heise online</a>
+      <a href="https://t3n.de" target="_blank">t3n</a>
+      <a href="https://www.golem.de" target="_blank">Golem.de</a>
+    </div>
+    <div class="tab-content" data-tab="3">
+      <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>
+      <a href="https://www.npr.org" target="_blank">NPR</a>
     </div>
   </div>
 
+  <!-- Navigation button -->
+  <div class="nav-button" id="navButton">
+    ☰
+  </div>
+
+  <!-- Hidden tab bar -->
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-index="0">Deutschland</div>
+    <div class="tab" data-index="1">International</div>
+    <div class="tab" data-index="2">Technik</div>
+    <div class="tab" data-index="3">Medien</div>
+  </div>
+
   <script>
-    /* ================= Matrix Regen ================= */
-    const canvas = document.getElementById('matrixCanvas');
-    const ctx = canvas.getContext('2d');
-    function resizeCanvas(){
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*';
-    const fontSize = 16;
-    let columns = Math.floor(canvas.width / fontSize);
-    let drops = Array(columns).fill(1);
-
-    function drawMatrix(){
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#0f0';
-      ctx.font = fontSize + 'px monospace';
-
-      for(let i = 0; i < drops.length; i++){
-        const text = letters.charAt(Math.floor(Math.random() * letters.length));
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975){
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-    }
-
-    setInterval(drawMatrix, 35);
-
-    /* ================= Tabs & Swipe ================= */
+    const navButton = document.getElementById('navButton');
+    const tabsBar = document.getElementById('tabs');
     const tabs = document.querySelectorAll('.tab');
-    const contentWrapper = document.getElementById('contentWrapper');
-    const tabsWrapper = document.getElementById('tabs');
-    let currentIndex = 0;
-    let startX = 0, startScroll = 0, startTime = 0;
+    const contents = document.querySelectorAll('.tab-content');
 
-    function setActiveTab(index, smooth = true) {
-      tabs.forEach(t => t.classList.remove('active'));
-      if (tabs[index]) {
-        tabs[index].classList.add('active');
-        contentWrapper.scrollTo({
-          left: index * contentWrapper.clientWidth,
-          behavior: smooth ? 'smooth' : 'auto'
-        });
-        currentIndex = index;
+    let tabsVisible = false;
+
+    // Toggle tab bar
+    navButton.addEventListener('click', () => {
+      tabsVisible = !tabsVisible;
+      if (tabsVisible) {
+        tabsBar.classList.add('show');
+      } else {
+        tabsBar.classList.remove('show');
       }
-    }
+    });
 
+    // Switch content
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const index = parseInt(tab.dataset.index);
-        setActiveTab(index);
+
+        // activate tab
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // show content
+        contents.forEach(c => c.classList.remove('active'));
+        contents[index].classList.add('active');
+
+        // hide nav bar smoothly
+        tabsVisible = false;
+        tabsBar.classList.remove('show');
       });
     });
-
-    /* Swipe Handling */
-    contentWrapper.addEventListener('touchstart', (e) => {
-      startX = e.touches[0].clientX;
-      startScroll = contentWrapper.scrollLeft;
-      startTime = Date.now();
-    });
-
-    contentWrapper.addEventListener('touchend', (e) => {
-      const dx = e.changedTouches[0].clientX - startX;
-      const dt = Date.now() - startTime;
-      const velocity = Math.abs(dx / dt);
-
-      let direction = dx > 0 ? -1 : 1;
-      let targetIndex = currentIndex;
-
-      if (velocity > 0.5) {
-        // harter Swipe → mehrere Tabs
-        targetIndex += direction * Math.min(2, Math.round(velocity * 2));
-      } else if (Math.abs(dx) > contentWrapper.clientWidth / 4) {
-        // normaler Swipe → ein Tab
-        targetIndex += direction * 1;
-      }
-
-      targetIndex = Math.max(0, Math.min(tabs.length - 1, targetIndex));
-      setActiveTab(targetIndex);
-    });
-
-    // Initial
-    setActiveTab(0, false);
   </script>
-
 </body>
 </html>
