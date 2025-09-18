@@ -23,7 +23,7 @@ a:hover { text-decoration: underline; }
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: rgba(3, 218, 198, 0.7); /* Ausgangstransparenz */
+  background: rgba(3, 218, 198, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,7 +32,7 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   transition: background 0.3s;
 }
-.nav-button.active { background: rgb(3, 218, 198); } /* Vollfarbe beim Öffnen */
+.nav-button.active { background: rgb(3, 218, 198); }
 .nav-button:hover { background: rgba(3, 218, 198, 0.9); }
 
 /* Tabs */
@@ -53,7 +53,7 @@ a:hover { text-decoration: underline; }
   border-top: 2px solid #03dac6;
   transition: bottom 0.4s ease;
   z-index: 9;
-  overscroll-behavior-x: contain; /* verhindert "Buggy-Ende" beim Swipen */
+  overscroll-behavior-x: contain;
 }
 .tabs.show { bottom: 90px; }
 .tab { flex: 0 0 auto; padding: 0.5em 1em; cursor: pointer; white-space: nowrap; border-radius: 8px; margin: 0 5px; transition: background 0.3s; scroll-snap-align: start; color: white; }
@@ -98,7 +98,6 @@ const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*';
 const fontSize = 16;
 let columns = Math.floor(canvas.width / fontSize);
 let drops = Array(columns).fill(1);
-
 function drawMatrix(){
   ctx.fillStyle = 'rgba(0,0,0,0.05)';
   ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -107,7 +106,7 @@ function drawMatrix(){
   for(let i=0;i<drops.length;i++){
     const text = letters.charAt(Math.floor(Math.random()*letters.length));
     ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    if(drops[i]*fontSize > canvas.height && Math.random()>0.975) drops[i]=0;
     drops[i]++;
   }
 }
@@ -120,36 +119,46 @@ const tabs = document.querySelectorAll('.tab');
 const contents = document.querySelectorAll('.tab-content');
 let tabsVisible = false;
 
-function openTabs() {
+function openTabs(){
   tabsBar.classList.add('show');
-  navButton.classList.add('active'); // Button vollfarben
+  navButton.classList.add('active');
   tabsVisible = true;
 }
-function closeTabs() {
+function closeTabs(){
   tabsBar.classList.remove('show');
-  navButton.classList.remove('active'); // Button halbtransparent
+  navButton.classList.remove('active');
   tabsVisible = false;
 }
 
-navButton.addEventListener('click', () => {
-  tabsVisible ? closeTabs() : openTabs();
-});
+navButton.addEventListener('click', ()=>{ tabsVisible ? closeTabs() : openTabs(); });
 
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    const index = parseInt(tab.dataset.index);
-    contents.forEach(c => c.classList.remove('active'));
+tabs.forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    const index=parseInt(tab.dataset.index);
+    contents.forEach(c=>c.classList.remove('active'));
     contents[index].classList.add('active');
-    tabs.forEach(t => t.classList.remove('active'));
+    tabs.forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
     closeTabs();
   });
 });
 
-/* Horizontal Swipe Fix */
-let startX = 0, scrollStart = 0;
-tabsBar.addEventListener('touchstart', e => { startX = e.touches[0].clientX; scrollStart = tabsBar.scrollLeft; });
-tabsBar.addEventListener('touchmove', e => { const dx = startX - e.touches[0].clientX; tabsBar.scrollLeft = scrollStart + dx; });
+/* Horizontal Swipe Fix: Grenzen setzen */
+let startX=0, scrollStart=0;
+tabsBar.addEventListener('touchstart', e=>{
+  startX=e.touches[0].clientX;
+  scrollStart=tabsBar.scrollLeft;
+});
+tabsBar.addEventListener('touchmove', e=>{
+  const dx=startX - e.touches[0].clientX;
+  let newScroll = scrollStart + dx;
+  // linkes Limit
+  if(newScroll<0) newScroll=0;
+  // rechtes Limit
+  const maxScroll = tabsBar.scrollWidth - tabsBar.clientWidth;
+  if(newScroll>maxScroll) newScroll=maxScroll;
+  tabsBar.scrollLeft=newScroll;
+});
 
 /* Feed Quellen */
 const FEEDS = {
