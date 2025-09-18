@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>News mit Matrix + 3D Tabs</title>
+<title>News mit Matrix + 3D Endlos Tabs</title>
 <style>
 body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
 canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
@@ -18,7 +18,7 @@ a:hover { text-decoration:underline; }
 .nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:background 0.3s; }
 .nav-button.open { background:rgba(3,218,218,1); }
 
-.tabs { position:fixed; bottom:-70px; left:0; width:100%; height:60px; display:flex; overflow-x:auto; overflow-y:hidden; justify-content:flex-start; align-items:center; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; transition:bottom 0.4s ease; z-index:9; padding:0 20px; scroll-behavior:smooth; }
+.tabs { position:fixed; bottom:-70px; left:0; width:100%; height:60px; display:flex; overflow-x:hidden; justify-content:flex-start; align-items:center; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; transition:bottom 0.4s ease; z-index:9; perspective:1000px; }
 .tabs.show { bottom:90px; }
 
 .tab { flex:0 0 auto; padding:0.5em 1em; margin:0 10px; color:white; border-radius:8px; text-align:center; cursor:pointer; transition: transform 0.3s, color 0.3s; user-select:none; will-change: transform; }
@@ -40,6 +40,7 @@ a:hover { text-decoration:underline; }
   </div>
   <div class="nav-button" id="navButton">☰</div>
   <div class="tabs" id="tabs">
+    <!-- Wir klonen die Tabs dreimal für Endlos-Effekt -->
     <div class="tab" data-index="0">Deutschland</div>
     <div class="tab" data-index="1">International</div>
     <div class="tab" data-index="2">Technik</div>
@@ -81,7 +82,6 @@ function showTabs(show){
 }
 navButton.addEventListener('click',()=>showTabs(!tabsVisible));
 
-// Nur Feedwechsel oder Klick markiert active
 function setActiveTab(index){
   tabs.forEach(t=>t.classList.remove('active'));
   tabs[index].classList.add('active');
@@ -96,32 +96,29 @@ tabs.forEach(tab=>{
   });
 });
 
-// --- 3D CoverFlow ---
+// --- Endlos-3D Tabs ---
 function updateTabs3D(){
   const center=tabsBar.offsetWidth/2;
   tabs.forEach(tab=>{
     const rect=tab.getBoundingClientRect();
     const tabCenter=(rect.left+rect.right)/2;
-    const offset=(tabCenter-center)/150;
+    const offset=(tabCenter-center)/200;
     const scale=Math.max(0.7,1-Math.abs(offset)/2);
-    const rotateY=offset*30;
+    const rotateY=offset*40;
     const zIndex=Math.floor((1-scale)*100);
-    tab.style.transform=`translateX(${-offset*50}px) scale(${scale}) rotateY(${-rotateY}deg)`;
+    tab.style.transform=`translateX(${-offset*60}px) scale(${scale}) rotateY(${-rotateY}deg)`;
     tab.style.zIndex=zIndex;
   });
 }
 
-// Wählt Tab und optional active markieren
+// Zentriere Tab
 function selectTab(index,markActive=false){
-  contents.forEach(c=>c.classList.remove('active'));
-  contents[index].classList.add('active');
-  if(markActive) setActiveTab(index);
-  // Zentriere Tab
   const activeTab=tabs[index];
   const tabRect=activeTab.getBoundingClientRect();
   const barRect=tabsBar.getBoundingClientRect();
   const scrollOffset=tabRect.left + tabRect.width/2 - barRect.left - barRect.width/2;
   tabsBar.scrollLeft += scrollOffset;
+  if(markActive) setActiveTab(index);
   updateTabs3D();
 }
 
@@ -162,10 +159,9 @@ function loadFeed(containerId,urls,attempt=0){
       const items=Array.isArray(data.items)?data.items:[];
       if(items.length){
         el.innerHTML=renderItems(items);
-        // Feed → Tab active markieren
         const index=["feed-de","feed-int","feed-tech","feed-media"].indexOf(containerId);
         if(index>=0) setActiveTab(index);
-        selectTab(index,false); // Zentriere Tab ohne active neu setzen
+        selectTab(index,false);
       }else loadFeed(containerId,urls,attempt+1);
     })
     .catch(()=>{ loadFeed(containerId,urls,attempt+1); });
