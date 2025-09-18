@@ -13,21 +13,45 @@ canvas#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100
 .tab-content.active { display: block; }
 a { color: #03a9f4; text-decoration: none; display: block; margin: 0.5em 0; }
 a:hover { text-decoration: underline; }
-.nav-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 60px; height: 60px; border-radius: 50%; background: rgba(3,218,198,0.7); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
-.nav-button.open { background: rgba(3,218,198,1.0); }
-.tabs { position: fixed; bottom: -70px; left: 0; width: 100%; height: 60px; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; justify-content: flex-start; align-items: center; background: rgba(30,30,30,0.8); border-top: 2px solid #03dac6; transition: bottom 0.4s ease; z-index: 9; }
+.nav-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 60px; height: 60px; border-radius: 50%; background: rgba(3, 218, 198, 0.7); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
+.nav-button.open { background: rgba(3, 218, 198, 1.0); }
+
+.tabs {
+  position: fixed;
+  bottom: -70px;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start;
+  align-items: center;
+  background: rgba(30,30,30,0.8);
+  border-top: 2px solid #03dac6;
+  transition: bottom 0.4s ease;
+  z-index: 9;
+  padding-left: 0; /* Spacer wird über separate divs gesetzt */
+  padding-right: 0;
+}
 .tabs.show { bottom: 90px; }
-.tab-spacer { flex: 0 0 auto; } /* Dynamisch gesetzt über JS */
+
+.tab-spacer { flex: 0 0 auto; } /* Breite wird per JS gesetzt */
 .tab { flex: 0 0 auto; padding: 0.5em 1em; cursor: pointer; white-space: nowrap; border-radius: 8px; margin: 0 5px; transition: background 0.3s; scroll-snap-align: start; color: white; }
 .tab:hover { background: rgba(255,255,255,0.1); }
 .tab.active { color: #03dac6; font-weight: bold; }
+
 .tab-content ul { list-style: none; padding: 0; margin: 0; }
 .tab-content li { margin: 0.5em 0; }
 .muted { color: #aaa; font-size: 0.9em; }
 </style>
 </head>
 <body>
+
 <canvas id="matrixCanvas"></canvas>
+
 <div class="overlay">
   <div class="content-wrapper">
     <div class="tab-content active" data-tab="0" id="feed-de"></div>
@@ -35,7 +59,9 @@ a:hover { text-decoration: underline; }
     <div class="tab-content" data-tab="2" id="feed-tech"></div>
     <div class="tab-content" data-tab="3" id="feed-media"></div>
   </div>
+
   <div class="nav-button" id="navButton">☰</div>
+
   <div class="tabs" id="tabs">
     <div class="tab-spacer" id="spacer-left"></div>
     <div class="tab active" data-index="0">Deutschland</div>
@@ -50,7 +76,7 @@ a:hover { text-decoration: underline; }
 /* Matrix Regen */
 const canvas=document.getElementById('matrixCanvas'),ctx=canvas.getContext('2d');
 function resizeCanvas(){canvas.width=window.innerWidth; canvas.height=window.innerHeight;}
-window.addEventListener('resize',()=>{resizeCanvas(); setSpacerWidth();}); resizeCanvas();
+window.addEventListener('resize',resizeCanvas); resizeCanvas();
 const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*',fontSize=16;
 let columns=Math.floor(canvas.width/fontSize),drops=Array(columns).fill(1);
 function drawMatrix(){
@@ -66,14 +92,33 @@ function drawMatrix(){
 setInterval(drawMatrix,35);
 
 /* Tabs & Nav-Button */
-const navButton=document.getElementById('navButton'),tabsBar=document.getElementById('tabs'),tabs=document.querySelectorAll('.tab'),contents=document.querySelectorAll('.tab-content');
+const navButton=document.getElementById('navButton'),
+      tabsBar=document.getElementById('tabs'),
+      tabs=document.querySelectorAll('.tab'),
+      contents=document.querySelectorAll('.tab-content'),
+      spacerLeft=document.getElementById('spacer-left'),
+      spacerRight=document.getElementById('spacer-right');
+
 let tabsVisible=false;
+
+function setSpacerWidth(){
+  const viewportWidth = window.innerWidth;
+  const firstTab = tabs[0].offsetWidth;
+  const lastTab = tabs[tabs.length-1].offsetWidth;
+  const extra = 12; // extra Puffer wie bei RSS Feeds
+  spacerLeft.style.width = ((viewportWidth - firstTab)/2 + extra) + 'px';
+  spacerRight.style.width = ((viewportWidth - lastTab)/2 + extra) + 'px';
+}
+window.addEventListener('resize', setSpacerWidth);
+setSpacerWidth();
+
 function showTabs(show){
   tabsVisible=show;
   tabsBar.classList.toggle('show',show);
   navButton.classList.toggle('open',show);
 }
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
+
 tabs.forEach(tab=>{
   tab.addEventListener('click',()=>{
     const index=parseInt(tab.dataset.index);
@@ -84,38 +129,42 @@ tabs.forEach(tab=>{
     showTabs(false);
   });
 });
-let startX=0,scrollStart=0;
-tabsBar.addEventListener('touchstart',e=>{startX=e.touches[0].clientX; scrollStart=tabsBar.scrollLeft;});
-tabsBar.addEventListener('touchmove',e=>{const dx=startX-e.touches[0].clientX; tabsBar.scrollLeft=scrollStart+dx;});
 
-/* Dynamische Spacer für Overscroll */
-const spacerLeft=document.getElementById('spacer-left');
-const spacerRight=document.getElementById('spacer-right');
-function setSpacerWidth(){
-  const viewportWidth=window.innerWidth;
-  const firstTab=tabs[0].offsetWidth;
-  const lastTab=tabs[tabs.length-1].offsetWidth;
-  spacerLeft.style.width=((viewportWidth-firstTab)/2)+'px';
-  spacerRight.style.width=((viewportWidth-lastTab)/2)+'px';
-}
-setSpacerWidth();
+/* Touch Scroll */
+let startX=0,scrollStart=0;
+tabsBar.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; scrollStart=tabsBar.scrollLeft; });
+tabsBar.addEventListener('touchmove',e=>{ const dx=startX-e.touches[0].clientX; tabsBar.scrollLeft=scrollStart+dx; });
 
 /* Feeds + Backup */
 const FEEDS={
-  "feed-de":["https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml","https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"],
-  "feed-int":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"],
-  "feed-tech":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
-  "feed-media":["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
+  "feed-de":[
+    "https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml",
+    "https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"
+  ],
+  "feed-int":[
+    "https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922",
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"
+  ],
+  "feed-tech":[
+    "https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122",
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"
+  ],
+  "feed-media":[
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss",
+    "https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"
+  ]
 };
+
 function renderItems(items){
   let html="<ul>";
   items.slice(0,12).forEach(item=>{
-    const title=item.title||"Kein Titel",link=item.link||"#",date=item.pubDate||item.isoDate||"";
+    const title=item.title||"Kein Titel", link=item.link||"#", date=item.pubDate||item.isoDate||"";
     const dateHtml=date?`<div class="muted">${new Date(date).toLocaleString()}</div>`:"";
     html+=`<li><a href="${link}" target="_blank" rel="noopener">${title}</a>${dateHtml}</li>`;
   });
   html+="</ul>"; return html;
 }
+
 function loadFeed(containerId,urls,attempt=0){
   const el=document.getElementById(containerId);
   if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>";
@@ -129,7 +178,9 @@ function loadFeed(containerId,urls,attempt=0){
     })
     .catch(()=>{ loadFeed(containerId,urls,attempt+1); });
 }
+
 for(const [id,urls] of Object.entries(FEEDS)) loadFeed(id,urls);
 </script>
+
 </body>
 </html>
