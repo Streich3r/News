@@ -5,39 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>News mit Matrix + Swipeable Nav</title>
 <style>
-body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
-canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
-.overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,18,18,0.85); backdrop-filter:blur(2px); z-index:1; display:flex; flex-direction:column; justify-content:flex-end; }
-.content-wrapper { flex-grow:1; display:flex; overflow:hidden; }
-.tab-content { flex:0 0 100%; overflow-y:auto; padding:12em 1em 2em 1em; box-sizing:border-box; display:none; }
-.tab-content.active { display:block; }
-a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
-a:hover { text-decoration:underline; }
-.nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:background 0.3s; }
-.nav-button.open { background:rgba(3,218,198,1.0); }
+body { margin: 0; font-family: sans-serif; height: 100vh; overflow: hidden; background: #000; }
+canvas#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: black; }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,18,0.85); backdrop-filter: blur(2px); z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+.content-wrapper { flex-grow: 1; display: flex; overflow: hidden; }
+.tab-content { flex: 0 0 100%; overflow-y: auto; padding: 12em 1em 2em 1em; box-sizing: border-box; display: none; }
+.tab-content.active { display: block; }
+a { color: #03a9f4; text-decoration: none; display: block; margin: 0.5em 0; }
+a:hover { text-decoration: underline; }
+.nav-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 60px; height: 60px; border-radius: 50%; background: rgba(3, 218, 198, 0.7); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
+.nav-button.open { background: rgba(3, 218, 198, 1.0); }
 .tabs {
-  position:fixed;
-  bottom:-70px;
-  left:0;
-  width:100%;
-  height:60px;
-  display:flex;
-  overflow-x:auto;
-  overflow-y:hidden;
-  scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch;
-  background:rgba(30,30,30,0.8);
-  border-top:2px solid #03dac6;
-  transition:bottom 0.4s ease;
-  z-index:9;
+  position: fixed;
+  bottom: -70px;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start;
+  align-items: center;
+  background: rgba(30,30,30,0.8);
+  border-top: 2px solid #03dac6;
+  transition: bottom 0.4s ease;
+  z-index: 9;
 }
-.tabs.show { bottom:90px; }
-.tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; transition:background 0.3s; scroll-snap-align:center; color:white; }
-.tab:hover { background:rgba(255,255,255,0.1); }
-.tab.active { color:#03dac6; font-weight:bold; }
-.tab-content ul { list-style:none; padding:0; margin:0; }
-.tab-content li { margin:0.5em 0; }
-.muted { color:#aaa; font-size:0.9em; }
+.tabs.show { bottom: 90px; }
+.tab-spacer { flex: 0 0 15px; } /* Platz links und rechts */
+.tab { flex: 0 0 auto; padding: 0.5em 1em; cursor: pointer; white-space: nowrap; border-radius: 8px; margin: 0 5px; transition: background 0.3s; scroll-snap-align: start; color: white; }
+.tab:hover { background: rgba(255,255,255,0.1); }
+.tab.active { color: #03dac6; font-weight: bold; }
+.tab-content ul { list-style: none; padding: 0; margin: 0; }
+.tab-content li { margin: 0.5em 0; }
+.muted { color: #aaa; font-size: 0.9em; }
 </style>
 </head>
 <body>
@@ -51,42 +54,98 @@ a:hover { text-decoration:underline; }
   </div>
   <div class="nav-button" id="navButton">☰</div>
   <div class="tabs" id="tabs">
-    <div class="tab" data-index="0">Deutschland</div>
+    <div class="tab-spacer"></div>
+    <div class="tab active" data-index="0">Deutschland</div>
     <div class="tab" data-index="1">International</div>
     <div class="tab" data-index="2">Technik</div>
     <div class="tab" data-index="3">Medien</div>
+    <div class="tab-spacer"></div>
   </div>
 </div>
 
 <script>
-/* Matrix */
+/* Matrix Regen */
 const canvas=document.getElementById('matrixCanvas'),ctx=canvas.getContext('2d');
 function resizeCanvas(){canvas.width=window.innerWidth; canvas.height=window.innerHeight;}
 window.addEventListener('resize',resizeCanvas); resizeCanvas();
 const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*',fontSize=16;
 let columns=Math.floor(canvas.width/fontSize),drops=Array(columns).fill(1);
-function drawMatrix(){ctx.fillStyle='rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#0f0'; ctx.font=fontSize+'px monospace'; for(let i=0;i<drops.length;i++){const text=letters.charAt(Math.floor(Math.random()*letters.length)); ctx.fillText(text,i*fontSize,drops[i]*fontSize); if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++;}}
+function drawMatrix(){
+  ctx.fillStyle='rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#0f0'; ctx.font=fontSize+'px monospace';
+  for(let i=0;i<drops.length;i++){
+    const text=letters.charAt(Math.floor(Math.random()*letters.length));
+    ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+    if(drops[i]*fontSize>canvas.height && Math.random()>0.975) drops[i]=0;
+    drops[i]++;
+  }
+}
 setInterval(drawMatrix,35);
 
-/* Tabs & Nav */
+/* Tabs & Nav-Button */
 const navButton=document.getElementById('navButton'),tabsBar=document.getElementById('tabs'),tabs=document.querySelectorAll('.tab'),contents=document.querySelectorAll('.tab-content');
 let tabsVisible=false;
-function showTabs(show){tabsVisible=show; tabsBar.classList.toggle('show',show); navButton.classList.toggle('open',show);}
+function showTabs(show){
+  tabsVisible=show;
+  tabsBar.classList.toggle('show',show);
+  navButton.classList.toggle('open',show);
+}
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
-tabs.forEach(tab=>{tab.addEventListener('click',()=>{const index=parseInt(tab.dataset.index); contents.forEach(c=>c.classList.remove('active')); contents[index].classList.add('active'); tabs.forEach(t=>t.classList.remove('active')); tab.classList.add('active'); showTabs(false);});});
+tabs.forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    const index=parseInt(tab.dataset.index);
+    contents.forEach(c=>c.classList.remove('active'));
+    contents[index].classList.add('active');
+    tabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    showTabs(false);
+  });
+});
 let startX=0,scrollStart=0;
 tabsBar.addEventListener('touchstart',e=>{startX=e.touches[0].clientX; scrollStart=tabsBar.scrollLeft;});
 tabsBar.addEventListener('touchmove',e=>{const dx=startX-e.touches[0].clientX; tabsBar.scrollLeft=scrollStart+dx;});
 
 /* Feeds + Backup */
 const FEEDS={
-  "feed-de":["https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml","https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"],
-  "feed-int":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"],
-  "feed-tech":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
-  "feed-media":["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
+  "feed-de":[
+    "https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml",
+    "https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"
+  ],
+  "feed-int":[
+    "https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922",
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"
+  ],
+  "feed-tech":[
+    "https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122",
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"
+  ],
+  "feed-media":[
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss",
+    "https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"
+  ]
 };
-function renderItems(items){let html="<ul>"; items.slice(0,12).forEach(item=>{const title=item.title||"Kein Titel",link=item.link||"#",date=item.pubDate||item.isoDate||""; const dateHtml=date?`<div class="muted">${new Date(date).toLocaleString()}</div>`:""; html+=`<li><a href="${link}" target="_blank" rel="noopener">${title}</a>${dateHtml}</li>`;}); html+="</ul>"; return html;}
-function loadFeed(containerId,urls,attempt=0){const el=document.getElementById(containerId); if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>"; if(!urls[attempt]){el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return;} fetch(urls[attempt]).then(res=>{if(!res.ok) throw new Error("HTTP "+res.status); return res.json();}).then(data=>{const items=Array.isArray(data.items)?data.items:[]; if(items.length) el.innerHTML=renderItems(items); else loadFeed(containerId,urls,attempt+1);}).catch(()=>{loadFeed(containerId,urls,attempt+1);});}
+function renderItems(items){
+  let html="<ul>";
+  items.slice(0,12).forEach(item=>{
+    const title=item.title||"Kein Titel",link=item.link||"#",date=item.pubDate||item.isoDate||"";
+    const dateHtml=date?`<div class="muted">${new Date(date).toLocaleString()}</div>`:"";
+    html+=`<li><a href="${link}" target="_blank" rel="noopener">${title}</a>${dateHtml}</li>`;
+  });
+  html+="</ul>"; return html;
+}
+function loadFeed(containerId,urls,attempt=0){
+  const el=document.getElementById(containerId);
+  if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>";
+  if(!urls[attempt]){ el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
+  fetch(urls[attempt])
+    .then(res=>{ if(!res.ok) throw new Error("HTTP "+res.status); return res.json(); })
+    .then(data=>{
+      const items=Array.isArray(data.items)?data.items:[];
+      if(items.length) el.innerHTML=renderItems(items);
+      else loadFeed(containerId,urls,attempt+1);
+    })
+    .catch(()=>{ loadFeed(containerId,urls,attempt+1); });
+}
 for(const [id,urls] of Object.entries(FEEDS)) loadFeed(id,urls);
 </script>
 </body>
