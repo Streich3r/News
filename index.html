@@ -9,36 +9,82 @@
     canvas#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: black; }
     .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,18,0.85); backdrop-filter: blur(2px); z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; }
     .content-wrapper { flex-grow: 1; display: flex; overflow: hidden; }
-    .tab-content { flex: 0 0 100%; overflow-y: auto; padding: 12em 1em 2em 1em; box-sizing: border-box; display: none; }
+
+    /* ------------------- Tab Content ------------------- */
+    .tab-content {
+      flex: 0 0 100%;
+      overflow-y: auto;
+      padding: 12em 1em 6em 1em; /* oben mehr Platz für Scrollen, unten Puffer */
+      box-sizing: border-box;
+      display: none;
+    }
     .tab-content.active { display: block; }
+
     a { color: #03a9f4; text-decoration: none; display: block; margin: 0.5em 0; }
     a:hover { text-decoration: underline; }
-    .nav-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 60px; height: 60px; border-radius: 50%; background: rgba(3, 218, 198, 0.8); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
-    .nav-button:hover { background: #04c2aa; }
-   .tabs {
-  position: fixed;
-  bottom: -70px;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  background: rgba(30,30,30,0.8);
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  justify-content: flex-start;
-  align-items: center;
-  border-top: 2px solid #03dac6;
-  transition: bottom 0.4s ease;
-  z-index: 9;
 
-  overscroll-behavior-x: contain; /* verhindert "Buggy-Ende" beim Swipen */
-}
+    /* ------------------- Navigation Button ------------------- */
+    .nav-button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: rgba(3, 218, 198, 0.8);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 10;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+    .nav-button:hover { background: #04c2aa; }
+
+    /* ------------------- Tabs Bar ------------------- */
+    .tabs {
+      position: fixed;
+      bottom: -70px;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: rgba(30,30,30,0.8);
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      justify-content: flex-start;
+      align-items: center;
+      border-top: 2px solid #03dac6;
+      transition: bottom 0.4s ease;
+      z-index: 9;
+
+      overscroll-behavior-x: contain; /* verhindert Overscroll */
+      padding-left: 10px; /* linker Puffer */
+      padding-right: 10px; /* rechter Puffer */
+    }
+
     .tabs.show { bottom: 90px; }
-    .tab { flex: 0 0 auto; padding: 0.5em 1em; cursor: pointer; white-space: nowrap; border-radius: 8px; margin: 0 5px; transition: background 0.3s; scroll-snap-align: start; color: white; }
+
+    /* ------------------- Tab Buttons ------------------- */
+    .tab {
+      flex: 0 0 auto;
+      padding: 0.5em 1em;
+      cursor: pointer;
+      white-space: nowrap;
+      border-radius: 8px;
+      margin: 0 5px;
+      transition: background 0.3s;
+      scroll-snap-align: start;
+      color: white;
+    }
     .tab:hover { background: rgba(255,255,255,0.1); }
     .tab.active { color: #03dac6; font-weight: bold; }
+
+    /* Abstand für erste und letzte Tabs */
+    .tab:first-child { margin-left: 5px; }
+    .tab:last-child { margin-right: 5px; }
+
+    /* ------------------- Feed List ------------------- */
     .tab-content ul { list-style: none; padding: 0; margin: 0; }
     .tab-content li { margin: 0.5em 0; }
     .muted { color: #aaa; font-size: 0.9em; }
@@ -77,8 +123,10 @@
     let columns = Math.floor(canvas.width / fontSize);
     let drops = Array(columns).fill(1);
     function drawMatrix(){
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = '#0f0'; ctx.font = fontSize+'px monospace';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#0f0';
+      ctx.font = fontSize+'px monospace';
       for(let i=0;i<drops.length;i++){
         const text = letters.charAt(Math.floor(Math.random()*letters.length));
         ctx.fillText(text, i*fontSize, drops[i]*fontSize);
@@ -147,36 +195,20 @@
 
     function loadFeed(containerId, urls, attempt = 0) {
       const el = document.getElementById(containerId);
-      if (attempt === 0) {
-        el.innerHTML = "<p class='muted'>Lade Feed…</p>";
-      }
-
-      if (!urls[attempt]) {
-        el.innerHTML = "<p class='muted'>Feed konnte nicht geladen werden.</p>";
-        return;
-      }
+      if (attempt === 0) { el.innerHTML = "<p class='muted'>Lade Feed…</p>"; }
+      if (!urls[attempt]) { el.innerHTML = "<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
 
       fetch(urls[attempt])
-        .then(res => {
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          return res.json();
-        })
+        .then(res => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
         .then(data => {
           const items = Array.isArray(data.items) ? data.items : [];
-          el.innerHTML = items.length
-            ? renderItems(items)
-            : "<p class='muted'>Keine Einträge gefunden.</p>";
+          el.innerHTML = items.length ? renderItems(items) : "<p class='muted'>Keine Einträge gefunden.</p>";
         })
-        .catch(() => {
-          // Backup versuchen
-          loadFeed(containerId, urls, attempt + 1);
-        });
+        .catch(() => { loadFeed(containerId, urls, attempt + 1); });
     }
 
     // Init alle Feeds laden
-    for (const [id, urls] of Object.entries(FEEDS)) {
-      loadFeed(id, urls);
-    }
+    for (const [id, urls] of Object.entries(FEEDS)) { loadFeed(id, urls); }
   </script>
 </body>
 </html>
