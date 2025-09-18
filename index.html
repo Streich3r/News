@@ -15,9 +15,9 @@ a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
 a:hover { text-decoration:underline; }
 
 .nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:background 0.3s, opacity 0.3s; }
-.nav-button.open { background: rgba(3,218,198,1); }
+.nav-button.open { background: rgba(3,218,218,1); }
 
-.tabs { position:fixed; bottom:90px; left:0; width:100%; height:80px; display:flex; overflow-x:scroll; overflow-y:hidden; justify-content:center; align-items:center; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; z-index:9; padding:0 50px; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; }
+.tabs { position:fixed; bottom:90px; left:0; width:100%; height:80px; display:flex; overflow-x:scroll; overflow-y:hidden; justify-content:flex-start; align-items:center; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; z-index:9; padding:0 100px; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; }
 .tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; color:white; transition: transform 0.3s, font-size 0.3s, color 0.3s, opacity 0.3s; }
 .tab.active { color:#03dac6; font-weight:bold; font-size:1.3em; }
 .tab-content ul { list-style:none; padding:0; margin:0; }
@@ -38,10 +38,7 @@ a:hover { text-decoration:underline; }
   <div class="nav-button" id="navButton">☰</div>
 
   <div class="tabs" id="tabs">
-    <div class="tab" data-index="0">Deutschland</div>
-    <div class="tab" data-index="1">International</div>
-    <div class="tab" data-index="2">Technik</div>
-    <div class="tab" data-index="3">Medien</div>
+    <!-- Tabs werden per JS dupliziert für Endlos-Scroll -->
   </div>
 </div>
 
@@ -64,34 +61,59 @@ function drawMatrix(){
 setInterval(drawMatrix,35);
 
 // Tabs + Nav
-const navButton=document.getElementById('navButton'), tabsBar=document.getElementById('tabs'), tabs=document.querySelectorAll('.tab'), contents=document.querySelectorAll('.tab-content');
+const navButton=document.getElementById('navButton'), tabsBar=document.getElementById('tabs');
 let tabsVisible=false;
+let originalTabs = ["Deutschland","International","Technik","Medien"];
+let tabs=[]; // echte Tab-Elemente
+let centerIndex = 0;
+
+function createTabs(){
+  tabsBar.innerHTML="";
+  // Dupliziere für Endlos-Scroll: 2x links, original, 2x rechts
+  const repeatCount=2;
+  let allLabels=[];
+  for(let i=0;i<repeatCount;i++) allLabels=allLabels.concat(originalTabs);
+  allLabels=allLabels.concat(originalTabs);
+  for(let i=0;i<repeatCount;i++) allLabels=allLabels.concat(originalTabs);
+
+  allLabels.forEach((label,i)=>{
+    const tab=document.createElement('div');
+    tab.className="tab";
+    tab.innerText=label;
+    tab.dataset.origIndex = i % originalTabs.length;
+    tab.addEventListener('click',()=>{
+      centerTab(i);
+      showTabs(false);
+    });
+    tabsBar.appendChild(tab);
+    tabs.push(tab);
+  });
+}
 
 function showTabs(show){
   tabsVisible=show;
-  tabsBar.style.display=show?'flex':'none';
+  tabsBar.style.display = show ? "flex" : "none";
   navButton.classList.toggle('open',show);
   navButton.style.opacity = show?1:0.7;
-  updateTab3DEffect();
-}
-navButton.addEventListener('click',()=>showTabs(!tabsVisible));
-
-function setActiveTab(index){
-  tabs.forEach(t=>t.classList.remove('active'));
-  tabs[index].classList.add('active');
-  contents.forEach(c=>c.classList.remove('active'));
-  contents[index].classList.add('active');
-  scrollToCenterTab(index);
+  update3DEffect();
 }
 
-function scrollToCenterTab(index){
+navButton.addEventListener('click', ()=> showTabs(!tabsVisible));
+
+function centerTab(index){
   const tab=tabs[index];
-  const center=(tabsBar.offsetWidth/2)-(tab.offsetWidth/2);
-  tabsBar.scrollTo({ left:tab.offsetLeft - center, behavior:'smooth' });
+  const center=(tabsBar.offsetWidth/2) - (tab.offsetWidth/2);
+  tabsBar.scrollTo({ left: tab.offsetLeft - center, behavior:'smooth' });
+  update3DEffect();
+  // Aktiviere den Tab
+  tabs.forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  contents.forEach(c=>c.classList.remove('active'));
+  contents[tab.dataset.origIndex].classList.add('active');
+  centerIndex=index;
 }
 
-// 3D Karussell Effekt
-function updateTab3DEffect(){
+function update3DEffect(){
   const centerX = tabsBar.scrollLeft + tabsBar.offsetWidth/2;
   tabs.forEach(tab=>{
     const tabCenter = tab.offsetLeft + tab.offsetWidth/2;
@@ -102,26 +124,17 @@ function updateTab3DEffect(){
     tab.style.opacity = scale;
   });
 }
-tabsBar.addEventListener('scroll', updateTab3DEffect);
 
-// Tab Click
-tabs.forEach((tab,index)=>{
-  tab.addEventListener('click',()=>{
-    setActiveTab(index);
-    showTabs(false);
-  });
+tabsBar.addEventListener('scroll', ()=>{
+  update3DEffect();
+  // Endlos-Scroll logik
+  const totalWidth = tabsBar.scrollWidth / 5; // original + duplicates
+  if(tabsBar.scrollLeft < totalWidth){
+    tabsBar.scrollLeft += totalWidth*3;
+  } else if(tabsBar.scrollLeft > totalWidth*4){
+    tabsBar.scrollLeft -= totalWidth*3;
+  }
 });
-
-// Endlos-Scroll Simulation
-function duplicateTabs(){
-  const fragment=document.createDocumentFragment();
-  tabs.forEach(tab=>{
-    const clone=tab.cloneNode(true);
-    fragment.appendChild(clone);
-  });
-  tabsBar.appendChild(fragment);
-}
-duplicateTabs();
 
 // Feeds + Backup
 const FEEDS={
@@ -130,7 +143,6 @@ const FEEDS={
   "feed-tech":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
   "feed-media":["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
 };
-
 function renderItems(items){
   let html="<ul>";
   items.slice(0,12).forEach(item=>{
@@ -141,7 +153,6 @@ function renderItems(items){
   html+="</ul>";
   return html;
 }
-
 function loadFeed(containerId, urls, attempt=0){
   const el=document.getElementById(containerId);
   if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>";
@@ -153,14 +164,16 @@ function loadFeed(containerId, urls, attempt=0){
       const items=Array.isArray(data.items)?data.items:[];
       if(items.length){
         el.innerHTML=renderItems(items);
+        // Setze den Tab zentriert, wenn Feed geladen
         const index=["feed-de","feed-int","feed-tech","feed-media"].indexOf(containerId);
-        if(index>=0) setActiveTab(index);
+        if(index>=0) centerTab(2*originalTabs.length + index); // zentriert im Originalblock
       } else loadFeed(containerId,urls,attempt+1);
     })
     .catch(()=>loadFeed(containerId,urls,attempt+1));
 }
 
-// Init Feeds
+// Init
+createTabs();
 for(const [id,urls] of Object.entries(FEEDS)) loadFeed(id,urls);
 </script>
 </body>
