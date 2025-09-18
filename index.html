@@ -32,8 +32,6 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   transition: background 0.3s;
 }
-.nav-button.active { background: rgb(3, 218, 198); }
-.nav-button:hover { background: rgba(3, 218, 198, 0.9); }
 
 /* Tabs */
 .tabs {
@@ -121,16 +119,19 @@ let tabsVisible = false;
 
 function openTabs(){
   tabsBar.classList.add('show');
-  navButton.classList.add('active');
+  navButton.style.background = 'rgba(3,218,198,1.0)'; // Vollfarben
   tabsVisible = true;
 }
+
 function closeTabs(){
   tabsBar.classList.remove('show');
-  navButton.classList.remove('active');
+  navButton.style.background = 'rgba(3,218,198,0.7)'; // Transparent zurück
   tabsVisible = false;
 }
 
-navButton.addEventListener('click', ()=>{ tabsVisible ? closeTabs() : openTabs(); });
+navButton.addEventListener('click', ()=>{
+  tabsVisible ? closeTabs() : openTabs();
+});
 
 tabs.forEach(tab=>{
   tab.addEventListener('click', ()=>{
@@ -139,11 +140,11 @@ tabs.forEach(tab=>{
     contents[index].classList.add('active');
     tabs.forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
-    closeTabs();
+    closeTabs(); // Immer zurück auf transparent beim Schließen via Tab
   });
 });
 
-/* Horizontal Swipe Fix: Grenzen setzen */
+/* Horizontal Swipe Fix */
 let startX=0, scrollStart=0;
 tabsBar.addEventListener('touchstart', e=>{
   startX=e.touches[0].clientX;
@@ -152,9 +153,7 @@ tabsBar.addEventListener('touchstart', e=>{
 tabsBar.addEventListener('touchmove', e=>{
   const dx=startX - e.touches[0].clientX;
   let newScroll = scrollStart + dx;
-  // linkes Limit
   if(newScroll<0) newScroll=0;
-  // rechtes Limit
   const maxScroll = tabsBar.scrollWidth - tabsBar.clientWidth;
   if(newScroll>maxScroll) newScroll=maxScroll;
   tabsBar.scrollLeft=newScroll;
@@ -184,18 +183,4 @@ function renderItems(items){
 function loadFeed(containerId, urls, attempt=0){
   const el=document.getElementById(containerId);
   if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>";
-  if(!urls[attempt]) { el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
-  fetch(urls[attempt])
-    .then(res=>{ if(!res.ok) throw new Error("HTTP "+res.status); return res.json(); })
-    .then(data=>{
-      const items=Array.isArray(data.items)?data.items:[];
-      el.innerHTML=items.length?renderItems(items):"<p class='muted'>Keine Einträge gefunden.</p>";
-    })
-    .catch(()=>loadFeed(containerId, urls, attempt+1));
-}
-
-/* Init alle Feeds laden */
-for(const [id, urls] of Object.entries(FEEDS)) loadFeed(id, urls);
-</script>
-</body>
-</html>
+ 
