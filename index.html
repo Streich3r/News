@@ -46,18 +46,9 @@ canvas#matrixCanvas {
   box-sizing: border-box;
   display: none;
 }
-.tab-content.active {
-  display: block;
-}
-a {
-  color: #03a9f4;
-  text-decoration: none;
-  display: block;
-  margin: 0.5em 0;
-}
-a:hover {
-  text-decoration: underline;
-}
+.tab-content.active { display: block; }
+a { color: #03a9f4; text-decoration: none; display: block; margin: 0.5em 0; }
+a:hover { text-decoration: underline; }
 .nav-button {
   position: fixed;
   bottom: 20px;
@@ -75,9 +66,8 @@ a:hover {
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   transition: background 0.3s;
 }
-.nav-button.open {
-  background: rgba(3,218,198,1);
-}
+.nav-button.open { background: rgba(3,218,198,1); }
+
 .tabs {
   position: fixed;
   bottom: 90px;
@@ -89,39 +79,26 @@ a:hover {
   height: 60px;
   z-index: 9;
   user-select: none;
+  perspective: 1000px; /* für 3D */
 }
 .tab {
   flex: 0 0 auto;
   padding: 0.5em 1em;
-  margin: 0 10px;
+  margin: 0 8px;
   background: rgba(30,30,30,0.8);
   border-radius: 8px;
   color: white;
   cursor: pointer;
-  transition: transform 0.3s, z-index 0.3s;
+  transition: transform 0.3s, z-index 0.3s, opacity 0.3s;
 }
-.tab.active {
-  color: #03dac6;
-  font-weight: bold;
-}
-.tab-content ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.tab-content li {
-  margin: 0.5em 0;
-}
-.muted {
-  color: #aaa;
-  font-size: 0.9em;
-}
+.tab.active { color: #03dac6; font-weight: bold; }
+.tab-content ul { list-style: none; padding: 0; margin: 0; }
+.tab-content li { margin: 0.5em 0; }
+.muted { color: #aaa; font-size: 0.9em; }
 </style>
 </head>
 <body>
-
 <canvas id="matrixCanvas"></canvas>
-
 <div class="overlay">
   <div class="content-wrapper">
     <div class="tab-content active" data-tab="0" id="feed-de"></div>
@@ -129,9 +106,7 @@ a:hover {
     <div class="tab-content" data-tab="2" id="feed-tech"></div>
     <div class="tab-content" data-tab="3" id="feed-media"></div>
   </div>
-
   <div class="nav-button" id="navButton">☰</div>
-
   <div class="tabs" id="tabs">
     <div class="tab" data-index="0">Deutschland</div>
     <div class="tab" data-index="1">International</div>
@@ -167,25 +142,25 @@ setInterval(drawMatrix,35);
 
 // Tabs + NavButton
 const navButton = document.getElementById('navButton');
-const tabs = document.querySelectorAll('.tab');
 const tabsContainer = document.getElementById('tabs');
+const tabs = document.querySelectorAll('.tab');
 const contents = document.querySelectorAll('.tab-content');
 let activeIndex = 0;
 
-// Funktion für 3D Tiefe
 function updateTabs3D(){
+  const centerX = window.innerWidth/2;
   tabs.forEach((tab,i)=>{
     const offset = i - activeIndex;
-    const scale = Math.max(0.7,1-Math.abs(offset)*0.15);
-    const translateZ = -Math.abs(offset)*50;
-    const translateX = offset*140;
-    tab.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) scale(${scale})`;
-    tab.style.zIndex = 100 - Math.abs(offset);
+    const scale = Math.max(0.7, 1 - Math.abs(offset)*0.2);
+    const zIndex = 100 - Math.abs(offset);
+    const x = offset * 100;
+    tab.style.transform = `translateX(${x}px) translateZ(${-Math.abs(offset)*50}px) scale(${scale})`;
+    tab.style.zIndex = zIndex;
     tab.style.opacity = scale;
   });
 }
 
-// Klick auf Tab
+// Tab Klick
 tabs.forEach((tab,i)=>{
   tab.addEventListener('click',()=>{
     activeIndex=i;
@@ -198,8 +173,8 @@ tabs.forEach((tab,i)=>{
 });
 updateTabs3D();
 
-// Swipe mit Pointer
-let isDragging=false, startX=0, lastX=0, velocity=0;
+// Swipe
+let isDragging=false,startX=0,lastX=0,velocity=0;
 function animate(){
   if(!isDragging){
     velocity *= 0.95;
@@ -213,37 +188,25 @@ function animate(){
   requestAnimationFrame(animate);
 }
 animate();
-
-tabsContainer.addEventListener('pointerdown', e=>{
-  isDragging=true;
-  startX=e.clientX;
-  lastX=e.clientX;
+tabsContainer.addEventListener('pointerdown',e=>{
+  isDragging=true; startX=e.clientX; lastX=e.clientX;
 });
-tabsContainer.addEventListener('pointermove', e=>{
+tabsContainer.addEventListener('pointermove',e=>{
   if(!isDragging) return;
   const dx = e.clientX - lastX;
   velocity = -dx/50;
   lastX = e.clientX;
 });
-tabsContainer.addEventListener('pointerup', e=>{
-  isDragging=false;
-  activeIndex = Math.round(activeIndex);
-  updateTabs3D();
-});
-tabsContainer.addEventListener('pointerleave', e=>{
-  isDragging=false;
-  activeIndex = Math.round(activeIndex);
-  updateTabs3D();
-});
+tabsContainer.addEventListener('pointerup', e=>{ isDragging=false; activeIndex = Math.round(activeIndex); updateTabs3D(); });
+tabsContainer.addEventListener('pointerleave', e=>{ isDragging=false; activeIndex = Math.round(activeIndex); updateTabs3D(); });
 
 // NavButton
 let tabsVisible=false;
 function showTabs(show){
-  tabsVisible=show;
-  tabsContainer.style.display = show ? 'flex':'none';
-  navButton.classList.toggle('open',show);
+  tabsVisible = show;
+  navButton.classList.toggle('open', show);
 }
-navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
+navButton.addEventListener('click', ()=> showTabs(!tabsVisible));
 
 // Feeds + Backup
 const FEEDS={
