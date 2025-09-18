@@ -14,6 +14,7 @@ canvas#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100
 a { color: #03a9f4; text-decoration: none; display: block; margin: 0.5em 0; }
 a:hover { text-decoration: underline; }
 
+/* Nav-Button */
 .nav-button {
   position: fixed;
   bottom: 20px;
@@ -22,7 +23,7 @@ a:hover { text-decoration: underline; }
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: rgba(3, 218, 198, 0.5);
+  background: rgba(3, 218, 198, 0.7); /* Ausgangstransparenz */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,9 +32,10 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   transition: background 0.3s;
 }
-.nav-button.active { background: rgb(3, 218, 198); }
+.nav-button.active { background: rgb(3, 218, 198); } /* Vollfarbe beim Öffnen */
 .nav-button:hover { background: rgba(3, 218, 198, 0.9); }
 
+/* Tabs */
 .tabs {
   position: fixed;
   bottom: -70px;
@@ -51,7 +53,7 @@ a:hover { text-decoration: underline; }
   border-top: 2px solid #03dac6;
   transition: bottom 0.4s ease;
   z-index: 9;
-  overscroll-behavior-x: contain;
+  overscroll-behavior-x: contain; /* verhindert "Buggy-Ende" beim Swipen */
 }
 .tabs.show { bottom: 90px; }
 .tab { flex: 0 0 auto; padding: 0.5em 1em; cursor: pointer; white-space: nowrap; border-radius: 8px; margin: 0 5px; transition: background 0.3s; scroll-snap-align: start; color: white; }
@@ -86,17 +88,22 @@ a:hover { text-decoration: underline; }
 </div>
 
 <script>
+/* Matrix Regen */
 const canvas = document.getElementById('matrixCanvas');
 const ctx = canvas.getContext('2d');
 function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*';
 const fontSize = 16;
 let columns = Math.floor(canvas.width / fontSize);
 let drops = Array(columns).fill(1);
+
 function drawMatrix(){
-  ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#0f0'; ctx.font = fontSize+'px monospace';
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#0f0';
+  ctx.font = fontSize+'px monospace';
   for(let i=0;i<drops.length;i++){
     const text = letters.charAt(Math.floor(Math.random()*letters.length));
     ctx.fillText(text, i*fontSize, drops[i]*fontSize);
@@ -106,16 +113,26 @@ function drawMatrix(){
 }
 setInterval(drawMatrix,35);
 
+/* Tabs & Nav-Button */
 const navButton = document.getElementById('navButton');
 const tabsBar = document.getElementById('tabs');
 const tabs = document.querySelectorAll('.tab');
 const contents = document.querySelectorAll('.tab-content');
 let tabsVisible = false;
 
+function openTabs() {
+  tabsBar.classList.add('show');
+  navButton.classList.add('active'); // Button vollfarben
+  tabsVisible = true;
+}
+function closeTabs() {
+  tabsBar.classList.remove('show');
+  navButton.classList.remove('active'); // Button halbtransparent
+  tabsVisible = false;
+}
+
 navButton.addEventListener('click', () => {
-  tabsVisible = !tabsVisible;
-  tabsBar.classList.toggle('show', tabsVisible);
-  navButton.classList.toggle('active', tabsVisible);
+  tabsVisible ? closeTabs() : openTabs();
 });
 
 tabs.forEach(tab => {
@@ -125,16 +142,16 @@ tabs.forEach(tab => {
     contents[index].classList.add('active');
     tabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    tabsVisible = false;
-    tabsBar.classList.remove('show');
-    navButton.classList.remove('active');
+    closeTabs();
   });
 });
 
+/* Horizontal Swipe Fix */
 let startX = 0, scrollStart = 0;
 tabsBar.addEventListener('touchstart', e => { startX = e.touches[0].clientX; scrollStart = tabsBar.scrollLeft; });
 tabsBar.addEventListener('touchmove', e => { const dx = startX - e.touches[0].clientX; tabsBar.scrollLeft = scrollStart + dx; });
 
+/* Feed Quellen */
 const FEEDS = {
   "feed-de": ["https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml","https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"],
   "feed-int": ["https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"],
@@ -158,15 +175,18 @@ function renderItems(items){
 function loadFeed(containerId, urls, attempt=0){
   const el=document.getElementById(containerId);
   if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>";
-  if(!urls[attempt]){ el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
-  fetch(urls[attempt]).then(res=>{ if(!res.ok) throw new Error("HTTP "+res.status); return res.json(); }).then(data=>{
-    const items=Array.isArray(data.items)?data.items:[];
-    el.innerHTML=items.length?renderItems(items):"<p class='muted'>Keine Einträge gefunden.</p>";
-  }).catch(()=>{ loadFeed(containerId, urls, attempt+1); });
+  if(!urls[attempt]) { el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
+  fetch(urls[attempt])
+    .then(res=>{ if(!res.ok) throw new Error("HTTP "+res.status); return res.json(); })
+    .then(data=>{
+      const items=Array.isArray(data.items)?data.items:[];
+      el.innerHTML=items.length?renderItems(items):"<p class='muted'>Keine Einträge gefunden.</p>";
+    })
+    .catch(()=>loadFeed(containerId, urls, attempt+1));
 }
 
-for(const [id,urls] of Object.entries(FEEDS)) loadFeed(id, urls);
+/* Init alle Feeds laden */
+for(const [id, urls] of Object.entries(FEEDS)) loadFeed(id, urls);
 </script>
-
 </body>
 </html>
