@@ -15,7 +15,26 @@
     a:hover { text-decoration: underline; }
     .nav-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 60px; height: 60px; border-radius: 50%; background: rgba(3, 218, 198, 0.8); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
     .nav-button:hover { background: #04c2aa; }
-    .tabs { position: fixed; bottom: -70px; left: 0; width: 100%; height: 60px; background: rgba(30,30,30,0.8); display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; justify-content: flex-start; align-items: center; border-top: 2px solid #03dac6; transition: bottom 0.4s ease; z-index: 9; }
+   .tabs {
+  position: fixed;
+  bottom: -70px;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: rgba(30,30,30,0.8);
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start;
+  align-items: center;
+  border-top: 2px solid #03dac6;
+  transition: bottom 0.4s ease;
+  z-index: 9;
+
+  overscroll-behavior-x: contain; /* verhindert "Buggy-Ende" beim Swipen */
+}
     .tabs.show { bottom: 90px; }
     .tab { flex: 0 0 auto; padding: 0.5em 1em; cursor: pointer; white-space: nowrap; border-radius: 8px; margin: 0 5px; transition: background 0.3s; scroll-snap-align: start; color: white; }
     .tab:hover { background: rgba(255,255,255,0.1); }
