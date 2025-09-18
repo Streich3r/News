@@ -12,57 +12,13 @@ canvas#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100
 .tab-content { flex: 0 0 100%; overflow-y: auto; padding: 12em 1em 2em 1em; box-sizing: border-box; display: none; }
 .tab-content.active { display: block; }
 a { color: #03a9f4; text-decoration: none; display: block; margin: 0.5em 0; }
-a:hover { text-decoration: underline; }
-
-/* Nav-Button */
-.nav-button {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(3, 218, 198, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  transition: background 0.3s;
-}
-
-/* Tabs */
-.tabs {
-  position: fixed;
-  bottom: -70px;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  background: rgba(30,30,30,0.8);
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  justify-content: flex-start;
-  align-items: center;
-  border-top: 2px solid #03dac6;
-  transition: bottom 0.4s ease;
-  z-index: 9;
-  overscroll-behavior-x: contain;
-  padding-left: 40px;   /* Luft vor erster Tab */
-  padding-right: 40px;  /* Luft nach letzter Tab */
-}
+.nav-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 60px; height: 60px; border-radius: 50%; background: rgba(3,218,198,0.7); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
+.nav-button:hover { background: #04c2aa; }
+.tabs { position: fixed; bottom: -70px; left: 0; width: 100%; height: 60px; background: rgba(30,30,30,0.8); display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; justify-content: flex-start; align-items: center; border-top: 2px solid #03dac6; transition: bottom 0.4s ease; z-index: 9; padding-left: 40px; padding-right: 40px; }
 .tabs.show { bottom: 90px; }
-
 .tab { flex: 0 0 auto; padding: 0.5em 1em; cursor: pointer; white-space: nowrap; border-radius: 8px; margin: 0 5px; transition: background 0.3s; scroll-snap-align: start; color: white; }
-.tab:first-child { margin-left: 0; }
-.tab:last-child { margin-right: 0; }
 .tab:hover { background: rgba(255,255,255,0.1); }
 .tab.active { color: #03dac6; font-weight: bold; }
-
 .tab-content ul { list-style: none; padding: 0; margin: 0; }
 .tab-content li { margin: 0.5em 0; }
 .muted { color: #aaa; font-size: 0.9em; }
@@ -91,70 +47,48 @@ a:hover { text-decoration: underline; }
 </div>
 
 <script>
-/* Matrix Regen */
+// Matrix Regen
 const canvas = document.getElementById('matrixCanvas');
 const ctx = canvas.getContext('2d');
 function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resizeCanvas); resizeCanvas();
-
 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*';
 const fontSize = 16;
 let columns = Math.floor(canvas.width / fontSize);
 let drops = Array(columns).fill(1);
 function drawMatrix(){
-  ctx.fillStyle = 'rgba(0,0,0,0.05)';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#0f0';
-  ctx.font = fontSize+'px monospace';
+  ctx.fillStyle='rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#0f0'; ctx.font=fontSize+'px monospace';
   for(let i=0;i<drops.length;i++){
-    const text = letters.charAt(Math.floor(Math.random()*letters.length));
-    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-    if(drops[i]*fontSize > canvas.height && Math.random()>0.975) drops[i]=0;
+    const text=letters.charAt(Math.floor(Math.random()*letters.length));
+    ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+    if(drops[i]*fontSize>canvas.height && Math.random()>0.975) drops[i]=0;
     drops[i]++;
   }
 }
 setInterval(drawMatrix,35);
 
-/* Tabs & Nav-Button */
-const navButton = document.getElementById('navButton');
-const tabsBar = document.getElementById('tabs');
-const tabs = document.querySelectorAll('.tab');
-const contents = document.querySelectorAll('.tab-content');
-let tabsVisible = false;
+// Tabs & Nav
+const navButton=document.getElementById('navButton');
+const tabsBar=document.getElementById('tabs');
+const tabs=document.querySelectorAll('.tab');
+const contents=document.querySelectorAll('.tab-content');
+let tabsVisible=false;
+function openTabs(){ tabsBar.classList.add('show'); navButton.style.background='rgba(3,218,198,1.0)'; tabsVisible=true; }
+function closeTabs(){ tabsBar.classList.remove('show'); navButton.style.background='rgba(3,218,198,0.7)'; tabsVisible=false; }
+navButton.addEventListener('click',()=>{ tabsVisible?closeTabs():openTabs(); });
+tabs.forEach(tab=>{ tab.addEventListener('click',()=>{
+  const index=parseInt(tab.dataset.index);
+  contents.forEach(c=>c.classList.remove('active'));
+  contents[index].classList.add('active');
+  tabs.forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  closeTabs();
+}); });
 
-function openTabs(){
-  tabsBar.classList.add('show');
-  navButton.style.background = 'rgba(3,218,198,1.0)';
-  tabsVisible = true;
-}
-
-function closeTabs(){
-  tabsBar.classList.remove('show');
-  navButton.style.background = 'rgba(3,218,198,0.7)';
-  tabsVisible = false;
-}
-
-navButton.addEventListener('click', ()=>{
-  tabsVisible ? closeTabs() : openTabs();
-});
-
-tabs.forEach(tab=>{
-  tab.addEventListener('click', ()=>{
-    const index=parseInt(tab.dataset.index);
-    contents.forEach(c=>c.classList.remove('active'));
-    contents[index].classList.add('active');
-    tabs.forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    closeTabs();
-  });
-});
-
-/* Horizontal Swipe Fix + Overscroll-Luft */
+// Horizontal swipe mit Overscroll-Luft
 let startX=0, scrollStart=0;
-tabsBar.addEventListener('touchstart', e=>{
-  startX=e.touches[0].clientX;
-  scrollStart=tabsBar.scrollLeft;
-});
+tabsBar.addEventListener('touchstart', e=>{ startX=e.touches[0].clientX; scrollStart=tabsBar.scrollLeft; });
 tabsBar.addEventListener('touchmove', e=>{
   const dx=startX - e.touches[0].clientX;
   let newScroll = scrollStart + dx;
@@ -164,12 +98,12 @@ tabsBar.addEventListener('touchmove', e=>{
   tabsBar.scrollLeft=newScroll;
 });
 
-/* Feed Quellen */
-const FEEDS = {
-  "feed-de": ["https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml","https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"],
-  "feed-int": ["https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"],
-  "feed-tech": ["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
-  "feed-media": ["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
+// Feeds inkl. Backup
+const FEEDS={
+  "feed-de":["https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml","https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"],
+  "feed-int":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"],
+  "feed-tech":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
+  "feed-media":["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
 };
 
 function renderItems(items){
@@ -178,8 +112,8 @@ function renderItems(items){
     const title=item.title||"Kein Titel";
     const link=item.link||"#";
     const date=item.pubDate||item.isoDate||"";
-    const dateHtml=date?`<div class="muted">${new Date(date).toLocaleString()}</div>`:"";
-    html+=`<li><a href="${link}" target="_blank" rel="noopener">${title}</a>${dateHtml}</li>`;
+    const dateHtml=date?`<div class='muted'>${new Date(date).toLocaleString()}</div>`:"";
+    html+=`<li><a href='${link}' target='_blank' rel='noopener'>${title}</a>${dateHtml}</li>`;
   });
   html+="</ul>";
   return html;
@@ -188,22 +122,18 @@ function renderItems(items){
 function loadFeed(containerId, urls, attempt=0){
   const el=document.getElementById(containerId);
   if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>";
-  if(!urls[attempt]) { el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
+  if(!urls[attempt]){ el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
   fetch(urls[attempt])
-    .then(res=>{
-      if(!res.ok) throw new Error("HTTP "+res.status);
-      return res.json();
-    })
+    .then(res=>{ if(!res.ok) throw new Error("HTTP "+res.status); return res.json(); })
     .then(data=>{
-      const items = Array.isArray(data.items)?data.items:[];
-      el.innerHTML=items.length?renderItems(items):"<p class='muted'>Keine Einträge gefunden.</p>";
+      const items=Array.isArray(data.items)?data.items:[];
+      if(items.length) el.innerHTML=renderItems(items);
+      else loadFeed(containerId,urls,attempt+1);
     })
-    .catch(()=>{ loadFeed(containerId, urls, attempt+1); });
+    .catch(()=>{ loadFeed(containerId,urls,attempt+1); });
 }
 
-for(const [id, urls] of Object.entries(FEEDS)){
-  loadFeed(id, urls);
-}
+for(const [id,urls] of Object.entries(FEEDS)) loadFeed(id,urls);
 </script>
 </body>
 </html>
