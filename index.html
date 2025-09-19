@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>News mit Matrix + Endless Tabs</title>
+<title>News mit Matrix + 3D Tabs</title>
 <style>
 body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
 canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
@@ -17,7 +17,7 @@ a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
 a:hover { text-decoration:underline; }
 
 .nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
-.nav-button.open { background: rgba(3,218,198,1); }
+.nav-button.open { background: rgba(3,218,218,1); }
 
 .tabs {
   position:fixed;
@@ -28,7 +28,7 @@ a:hover { text-decoration:underline; }
   display:flex;
   justify-content:center;
   align-items:center;
-  overflow-x:hidden;
+  overflow:hidden;
   background:rgba(30,30,30,0.8);
   border-top:2px solid #03dac6;
   transition:bottom 0.4s ease;
@@ -36,9 +36,9 @@ a:hover { text-decoration:underline; }
 }
 .tabs.show { bottom:90px; }
 
-.tab-container { display:flex; align-items:center; transition: transform 0.3s ease; will-change: transform; }
+.tab-container { display:flex; align-items:center; transition: transform 0.2s ease; will-change: transform; }
 
-.tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; transition: transform 0.3s, color 0.3s; color:white; }
+.tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; transition: transform 0.2s, color 0.2s; color:white; transform-origin:center bottom; }
 .tab.active { color:#03dac6; font-weight:bold; }
 
 .tab-content ul { list-style:none; padding:0; margin:0; }
@@ -143,7 +143,7 @@ const tabsBar=document.getElementById('tabs');
 const tabContainer=document.getElementById('tabContainer');
 let tabsVisible=false;
 
-const originalTabs = Array.from(tabContainer.children);
+const tabs = Array.from(tabContainer.children);
 let activeIndex = 0;
 
 // Start mit Deutschland
@@ -151,49 +151,69 @@ const contents=document.querySelectorAll('.tab-content');
 contents.forEach(c=>c.classList.remove('active'));
 contents[0].classList.add('active');
 loadFeed('feed-de',FEEDS['feed-de']);
-originalTabs[0].classList.add('active');
+tabs[0].classList.add('active');
 
+// Show/hide Navbar
 function showTabs(show){
   tabsVisible=show;
   tabsBar.classList.toggle('show',show);
   navButton.classList.toggle('open',show);
-  if(show) centerActiveTab();
-}
-
-function centerActiveTab(){
-  const activeTab = tabContainer.querySelector('.tab.active');
-  if(!activeTab) return;
-  const tabsRect = tabsBar.getBoundingClientRect();
-  const tabRect = activeTab.getBoundingClientRect();
-  const offset = tabRect.left - tabsRect.left - tabsRect.width/2 + tabRect.width/2;
-  tabContainer.style.transform = `translateX(${-offset}px)`;
+  if(show) updateCarousel();
 }
 
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
 
-function updateActiveTab(index){
-  originalTabs.forEach(t=>t.classList.remove('active'));
-  originalTabs[index].classList.add('active');
-  contents.forEach((c,i)=>c.classList.remove('active'));
-  contents[index].classList.add('active');
-  loadFeed(contents[index].id,FEEDS[contents[index].id]);
-  activeIndex = index;
-  if(tabsVisible) centerActiveTab();
-}
-
-originalTabs.forEach((tab,i)=>{
+// Click Tab
+tabs.forEach((tab,i)=>{
   tab.addEventListener('click',()=>{
     updateActiveTab(i);
     showTabs(false);
   });
 });
 
-// Swipe/Scroll Tabs
-let startX=0,scrollStart=0;
-tabsBar.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; scrollStart=parseFloat(tabContainer.style.transform.replace('translateX(','').replace('px)',''))||0; });
+function updateActiveTab(index){
+  tabs.forEach(t=>t.classList.remove('active'));
+  tabs[index].classList.add('active');
+  contents.forEach((c,i)=>c.classList.remove('active'));
+  contents[index].classList.add('active');
+  loadFeed(contents[index].id,FEEDS[contents[index].id]);
+  activeIndex=index;
+  updateCarousel();
+}
+
+// Carousel 3D
+function updateCarousel(){
+  const centerX = tabsBar.clientWidth / 2;
+  tabs.forEach((tab,i)=>{
+    const tabRect = tab.getBoundingClientRect();
+    const tabCenter = tabRect.left + tabRect.width/2 - tabsBar.getBoundingClientRect().left;
+    const offset = (tabCenter - centerX)/150; // adjust for spacing
+    const scale = Math.max(0.6,1-Math.abs(offset)/3);
+    const rotateY = offset*25; // degrees
+    tab.style.transform = `perspective(600px) translateZ(${(scale-1)*50}px) scale(${scale}) rotateY(${rotateY}deg)`;
+  });
+  centerActiveTab();
+}
+
+// Center active tab
+function centerActiveTab(){
+  const activeTab = tabs[activeIndex];
+  const tabsRect = tabsBar.getBoundingClientRect();
+  const tabRect = activeTab.getBoundingClientRect();
+  const offset = tabRect.left - tabsRect.left - tabsRect.width/2 + tabRect.width/2;
+  tabContainer.style.transform = `translateX(${-offset}px)`;
+}
+
+// Swipe
+let startX=0, startTransform=0;
+tabsBar.addEventListener('touchstart',e=>{
+  startX=e.touches[0].clientX;
+  startTransform=parseFloat(tabContainer.style.transform.replace('translateX(','').replace('px)',''))||0;
+});
 tabsBar.addEventListener('touchmove',e=>{
   const dx=startX - e.touches[0].clientX;
-  tabContainer.style.transform = `translateX(${scrollStart - dx}px)`;
+  tabContainer.style.transform = `translateX(${startTransform - dx}px)`;
+  updateCarousel();
 });
 </script>
 </body>
