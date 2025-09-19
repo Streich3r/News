@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>News mit Matrix + Swipeable Nav</title>
 <style>
 body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
@@ -17,9 +17,10 @@ a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
 a:hover { text-decoration:underline; }
 
 .nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:background 0.3s; }
-.nav-button.open { background:rgba(3,218,198,1); }
+.nav-button.open { background:rgba(3,218,218,1); }
 
-.tabs-wrapper { position:fixed; bottom:90px; left:0; width:100%; display:flex; justify-content:center; overflow:hidden; z-index:9; }
+.tabs-wrapper { position:fixed; bottom:0; left:0; width:100%; height:60px; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; display:flex; justify-content:center; overflow:hidden; z-index:9; transform:translateY(100%); transition:transform 0.4s; }
+.tabs-wrapper.show { transform:translateY(0); }
 .tabs { display:flex; transition: transform 0.3s; will-change: transform; }
 .tab { flex:0 0 auto; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 10px; transition: transform 0.3s, font-size 0.3s, color 0.3s; color:white; font-size:1em; text-align:center; }
 .tab.active { color:#03dac6; font-weight:bold; font-size:1.3em; text-shadow:0 0 5px #03dac6; }
@@ -42,7 +43,7 @@ a:hover { text-decoration:underline; }
 
   <div class="nav-button" id="navButton">☰</div>
 
-  <div class="tabs-wrapper" id="tabsWrapper" style="display:none;">
+  <div class="tabs-wrapper" id="tabsWrapper">
     <div class="tabs" id="tabs"></div>
   </div>
 </div>
@@ -73,15 +74,13 @@ const FEEDS={
   "feed-tech":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
   "feed-media":["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
 };
-const CONTENT_IDS = ["feed-de","feed-int","feed-tech","feed-media"];
-
-// Tabs setup
-const tabNames = ["Deutschland","International","Technik","Medien"];
-const tabsContainer = document.getElementById('tabs');
-const tabsWrapper = document.getElementById('tabsWrapper');
+const CONTENT_IDS=["feed-de","feed-int","feed-tech","feed-media"];
+const tabNames=["Deutschland","International","Technik","Medien"];
+const tabsContainer=document.getElementById('tabs');
+const tabsWrapper=document.getElementById('tabsWrapper');
 let repeatedTabs=[]; const repeatCount=7;
 
-// repeat tabs für endlos scroll
+// Repeat tabs für Endlos
 for(let i=0;i<repeatCount;i++){
   tabNames.forEach((name,index)=>{
     const t=document.createElement('div');
@@ -97,7 +96,7 @@ const navButton=document.getElementById('navButton');
 let tabsVisible=false;
 function showTabs(show){
   tabsVisible=show;
-  tabsWrapper.style.display=show?'flex':'none';
+  tabsWrapper.classList.toggle('show',show);
   navButton.classList.toggle('open',show);
   updateTabsTransform();
 }
@@ -107,10 +106,10 @@ navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
 repeatedTabs.forEach(tab=>{
   tab.addEventListener('click',()=>{
     const idx=parseInt(tab.dataset.index);
-    // mark active tab
+    // mark active
     repeatedTabs.forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
-    // show content
+    // show feed
     CONTENT_IDS.forEach(c=>document.getElementById(c).classList.remove('active'));
     const content=document.getElementById(CONTENT_IDS[idx]);
     content.classList.add('active');
@@ -125,7 +124,6 @@ repeatedTabs.forEach(tab=>{
       }).catch(()=>tryLoad(urls,attempt+1));
     }
     tryLoad(FEEDS[CONTENT_IDS[idx]]);
-    // close nav
     showTabs(false);
     centerTab(tab);
   });
@@ -141,28 +139,27 @@ function renderItems(items){
   html+="</ul>"; return html;
 }
 
-// Center tab
+// Center tab & 3D
 function centerTab(tab){
-  const containerCenter = window.innerWidth/2;
+  const containerCenter=window.innerWidth/2;
   const rect=tab.getBoundingClientRect();
-  tabsWrapper.scrollLeft += rect.left + rect.width/2 - containerCenter;
+  tabsWrapper.scrollLeft+=rect.left+rect.width/2-containerCenter;
   updateTabsTransform();
 }
 
-// 3D effect
 function updateTabsTransform(){
-  const containerCenter = window.innerWidth/2;
+  const containerCenter=window.innerWidth/2;
   repeatedTabs.forEach(tab=>{
-    const rect = tab.getBoundingClientRect();
-    const tabCenter = rect.left + rect.width/2;
-    const distance = tabCenter - containerCenter;
-    const scale = Math.max(0.6, 1 - Math.abs(distance)/300);
-    const rotateY = distance/20;
-    tab.style.transform = `perspective(600px) rotateY(${rotateY}deg) scale(${scale})`;
+    const rect=tab.getBoundingClientRect();
+    const tabCenter=rect.left+rect.width/2;
+    const distance=tabCenter-containerCenter;
+    const scale=Math.max(0.6,1-Math.abs(distance)/300);
+    const rotateY=distance/20;
+    tab.style.transform=`perspective(600px) rotateY(${rotateY}deg) scale(${scale})`;
   });
 }
 
-// Touch scroll
+// Drag & Touch scroll
 let isDown=false, startX, scrollLeft;
 tabsWrapper.addEventListener('mousedown', e=>{ isDown=true; startX=e.pageX; scrollLeft=tabsWrapper.scrollLeft; });
 tabsWrapper.addEventListener('mouseup', ()=>isDown=false);
@@ -172,14 +169,29 @@ tabsWrapper.addEventListener('touchstart', e=>{ isDown=true; startX=e.touches[0]
 tabsWrapper.addEventListener('touchend', ()=>isDown=false);
 tabsWrapper.addEventListener('touchmove', e=>{ if(!isDown) return; tabsWrapper.scrollLeft=scrollLeft+(startX-e.touches[0].pageX); updateTabsTransform(); });
 
-// Initial position: Deutschland mittig
+// Initial load Deutschland Feed & Tab
 window.addEventListener('load', ()=>{
-  const firstTab = repeatedTabs.find(t=>t.dataset.index==0);
-  centerTab(firstTab);
+  const firstTab=repeatedTabs.find(t=>t.dataset.index=="0");
   firstTab.classList.add('active');
   document.getElementById("feed-de").classList.add('active');
+
+  // load deutschland feed sofort
+  const content=document.getElementById("feed-de");
+  content.innerHTML="<p class='muted'>Lade Feed…</p>";
+  function tryLoad(urls,attempt=0){
+    if(!urls[attempt]){ content.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
+    fetch(urls[attempt]).then(r=>r.json()).then(data=>{
+      const items=Array.isArray(data.items)?data.items:[];
+      if(items.length) content.innerHTML = renderItems(items);
+      else tryLoad(urls,attempt+1);
+    }).catch(()=>tryLoad(urls,attempt+1));
+  }
+  tryLoad(FEEDS["feed-de"]);
+
+  centerTab(firstTab);
 });
 window.addEventListener('resize', updateTabsTransform);
 </script>
+
 </body>
 </html>
