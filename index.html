@@ -3,25 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>News mit Matrix + 3D Carousel Tabs</title>
+<title>News mit Matrix + Swipeable Nav</title>
 <style>
 body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
 canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
+
 .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,18,18,0.85); backdrop-filter:blur(2px); z-index:1; display:flex; flex-direction:column; justify-content:flex-end; }
 .content-wrapper { flex-grow:1; display:flex; overflow:hidden; }
 .tab-content { flex:0 0 100%; overflow-y:auto; padding:12em 1em 12em 1em; box-sizing:border-box; display:none; color:white; }
 .tab-content.active { display:block; }
+
 a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
 a:hover { text-decoration:underline; }
+
 .nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:background 0.3s; }
 .nav-button.open { background:rgba(3,218,198,1); }
-.tabs-container { position:fixed; bottom:90px; left:0; width:100%; display:flex; justify-content:center; overflow:hidden; z-index:9; }
+
+.tabs-wrapper { position:fixed; bottom:90px; left:0; width:100%; display:flex; justify-content:center; overflow:hidden; z-index:9; }
 .tabs { display:flex; transition: transform 0.3s; will-change: transform; }
 .tab { flex:0 0 auto; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 10px; transition: transform 0.3s, font-size 0.3s, color 0.3s; color:white; font-size:1em; text-align:center; }
 .tab.active { color:#03dac6; font-weight:bold; font-size:1.3em; }
 .tab-content ul { list-style:none; padding:0; margin:0; }
 .tab-content li { margin:0.5em 0; }
 .muted { color:#aaa; font-size:0.9em; }
+
 </style>
 </head>
 <body>
@@ -38,7 +43,7 @@ a:hover { text-decoration:underline; }
 
   <div class="nav-button" id="navButton">☰</div>
 
-  <div class="tabs-container">
+  <div class="tabs-wrapper">
     <div class="tabs" id="tabs"></div>
   </div>
 </div>
@@ -71,18 +76,11 @@ const FEEDS={
 };
 const CONTENT_IDS = ["feed-de","feed-int","feed-tech","feed-media"];
 
-// Preload all feeds
+// preload empty
 const feedData={};
-CONTENT_IDS.forEach(id=>{ feedData[id]=[]; });
-function loadAllFeeds(){
-  CONTENT_IDS.forEach(id=>{
-    FEEDS[id].forEach(url=>{
-      fetch(url).then(r=>r.json()).then(data=>{ if(data.items) feedData[id].push(...data.items); });
-    });
-  });
-}
-loadAllFeeds();
+CONTENT_IDS.forEach(id=> feedData[id]=[]);
 
+// render function
 function renderItems(items){
   let html="<ul>";
   items.slice(0,12).forEach(item=>{
@@ -95,14 +93,18 @@ function renderItems(items){
 }
 
 // Tabs
-const tabsContainer=document.getElementById('tabs');
 const tabNames=["Deutschland","International","Technik","Medien"];
-let repeatedTabs=[]; // für endlos scroll
-const repeatCount=5; // genug Wiederholung für unendliches Scrollen
+const tabsContainer=document.getElementById('tabs');
+let repeatedTabs=[];
+const repeatCount=5;
 
+// repeat tabs für endlos scroll
 for(let i=0;i<repeatCount;i++){
   tabNames.forEach((name,index)=>{
-    const t=document.createElement('div'); t.className='tab'; t.dataset.index=index; t.innerText=name;
+    const t=document.createElement('div');
+    t.className='tab';
+    t.dataset.index=index;
+    t.innerText=name;
     tabsContainer.appendChild(t);
     repeatedTabs.push(t);
   });
@@ -113,13 +115,41 @@ let tabsVisible=false;
 const navButton=document.getElementById('navButton');
 function showTabs(show){
   tabsVisible=show;
-  document.querySelector('.tabs-container').style.display=show?'flex':'none';
+  document.querySelector('.tabs-wrapper').style.display=show?'flex':'none';
   navButton.classList.toggle('open',show);
   updateTabsTransform();
 }
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
 
-// center tab über nav button
+// Klick auf Tab lädt Feed
+repeatedTabs.forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    const idx=parseInt(tab.dataset.index);
+    // mark active
+    repeatedTabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    // content anzeigen
+    CONTENT_IDS.forEach(c=>document.getElementById(c).classList.remove('active'));
+    const content=document.getElementById(CONTENT_IDS[idx]);
+    content.classList.add('active');
+    // Feed laden
+    const urls = FEEDS[CONTENT_IDS[idx]];
+    content.innerHTML="<p class='muted'>Lade Feed…</p>";
+    function tryLoad(urls,attempt=0){
+      if(!urls[attempt]) { content.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
+      fetch(urls[attempt]).then(r=>r.json()).then(data=>{
+        const items=Array.isArray(data.items)?data.items:[];
+        if(items.length){ content.innerHTML=renderItems(items); feedData[CONTENT_IDS[idx]]=items; }
+        else tryLoad(urls,attempt+1);
+      }).catch(()=>tryLoad(urls,attempt+1));
+    }
+    tryLoad(urls);
+    // Tabs schließen
+    showTabs(false);
+  });
+});
+
+// 3D Effekt
 function updateTabsTransform(){
   const containerCenter = window.innerWidth/2;
   repeatedTabs.forEach(tab=>{
@@ -128,38 +158,29 @@ function updateTabsTransform(){
     const distance = tabCenter - containerCenter;
     const scale = Math.max(0.6,1 - Math.abs(distance)/300);
     const rotateY = distance/20;
-    tab.style.transform = `perspective(600px) rotateY(${rotateY}deg) scale(${scale})`;
-    // active markierung mittig
-    const index=parseInt(tab.dataset.index);
-    if(Math.abs(distance)<rect.width/2){
-      tabs.forEach(t=>t.classList.remove('active'));
-      repeatedTabs[index].classList.add('active');
-      // feed aktualisieren
-      CONTENT_IDS.forEach(c=>document.getElementById(c).classList.remove('active'));
-      document.getElementById(CONTENT_IDS[index]).classList.add('active');
-      document.getElementById(CONTENT_IDS[index]).innerHTML = renderItems(feedData[CONTENT_IDS[index]]);
-    }
+    tab.style.transform=`perspective(600px) rotateY(${rotateY}deg) scale(${scale})`;
   });
 }
 
-// Touch / scroll für endless
+// Touch / mouse scroll
 let isDown=false, startX, scrollLeft;
-tabsContainer.addEventListener('mousedown', e=>{ isDown=true; startX=e.pageX; scrollLeft=tabsContainer.scrollLeft; });
-tabsContainer.addEventListener('mouseleave', ()=>isDown=false);
-tabsContainer.addEventListener('mouseup', ()=>isDown=false);
-tabsContainer.addEventListener('mousemove', e=>{ if(!isDown) return; e.preventDefault(); const x=e.pageX; const walk=(startX-x); tabsContainer.scrollLeft=scrollLeft+walk; updateTabsTransform(); });
+const wrapper=document.querySelector('.tabs-wrapper');
+wrapper.addEventListener('mousedown', e=>{ isDown=true; startX=e.pageX; scrollLeft=wrapper.scrollLeft; });
+wrapper.addEventListener('mouseup', ()=>isDown=false);
+wrapper.addEventListener('mouseleave', ()=>isDown=false);
+wrapper.addEventListener('mousemove', e=>{ if(!isDown) return; e.preventDefault(); wrapper.scrollLeft = scrollLeft + (startX-e.pageX); updateTabsTransform(); });
+wrapper.addEventListener('touchstart', e=>{ isDown=true; startX=e.touches[0].pageX; scrollLeft=wrapper.scrollLeft; });
+wrapper.addEventListener('touchend', ()=>isDown=false);
+wrapper.addEventListener('touchmove', e=>{ if(!isDown) return; wrapper.scrollLeft = scrollLeft + (startX-e.touches[0].pageX); updateTabsTransform(); });
 
-tabsContainer.addEventListener('touchstart', e=>{ isDown=true; startX=e.touches[0].pageX; scrollLeft=tabsContainer.scrollLeft; });
-tabsContainer.addEventListener('touchend', ()=>isDown=false);
-tabsContainer.addEventListener('touchmove', e=>{ if(!isDown) return; const x=e.touches[0].pageX; const walk=(startX-x); tabsContainer.scrollLeft=scrollLeft+walk; updateTabsTransform(); });
-
-// initial zentrieren Deutschland
+// initial
 window.addEventListener('load', ()=>{
   const firstTab=repeatedTabs.find(t=>t.dataset.index==0);
   const centerX=window.innerWidth/2;
   const rect=firstTab.getBoundingClientRect();
-  tabsContainer.scrollLeft = firstTab.offsetLeft - centerX + rect.width/2;
-  updateTabsTransform();
+  wrapper.scrollLeft = firstTab.offsetLeft - centerX + rect.width/2;
+  firstTab.classList.add('active');
+  document.getElementById("feed-de").classList.add('active');
 });
 
 window.addEventListener('resize', updateTabsTransform);
