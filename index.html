@@ -37,9 +37,7 @@ a:hover { text-decoration:underline; }
 
   <div class="nav-button" id="navButton">☰</div>
 
-  <div class="tabs" id="tabs">
-    <!-- Tabs werden per JS dupliziert für Endlos-Scroll -->
-  </div>
+  <div class="tabs" id="tabs"></div>
 </div>
 
 <script>
@@ -63,31 +61,26 @@ setInterval(drawMatrix,35);
 // Tabs + Nav
 const navButton=document.getElementById('navButton'), tabsBar=document.getElementById('tabs');
 let tabsVisible=false;
-let originalTabs = ["Deutschland","International","Technik","Medien"];
-let tabs=[]; // echte Tab-Elemente
-let centerIndex = 0;
+const originalTabs = ["Deutschland","International","Technik","Medien"];
+let tabs=[]; 
+let centerIndex=0;
 
 function createTabs(){
   tabsBar.innerHTML="";
-  // Dupliziere für Endlos-Scroll: 2x links, original, 2x rechts
-  const repeatCount=2;
+  tabs=[];
+  const repeat=3;
   let allLabels=[];
-  for(let i=0;i<repeatCount;i++) allLabels=allLabels.concat(originalTabs);
-  allLabels=allLabels.concat(originalTabs);
-  for(let i=0;i<repeatCount;i++) allLabels=allLabels.concat(originalTabs);
-
+  for(let i=0;i<repeat;i++) allLabels=allLabels.concat(originalTabs);
   allLabels.forEach((label,i)=>{
     const tab=document.createElement('div');
     tab.className="tab";
     tab.innerText=label;
-    tab.dataset.origIndex = i % originalTabs.length;
-    tab.addEventListener('click',()=>{
-      centerTab(i);
-      showTabs(false);
-    });
+    tab.dataset.origIndex=i % originalTabs.length;
+    tab.addEventListener('click',()=> activateTab(tab.dataset.origIndex));
     tabsBar.appendChild(tab);
     tabs.push(tab);
   });
+  centerTab(originalTabs.length); // initial zentrieren
 }
 
 function showTabs(show){
@@ -97,7 +90,6 @@ function showTabs(show){
   navButton.style.opacity = show?1:0.7;
   update3DEffect();
 }
-
 navButton.addEventListener('click', ()=> showTabs(!tabsVisible));
 
 function centerTab(index){
@@ -105,12 +97,22 @@ function centerTab(index){
   const center=(tabsBar.offsetWidth/2) - (tab.offsetWidth/2);
   tabsBar.scrollTo({ left: tab.offsetLeft - center, behavior:'smooth' });
   update3DEffect();
-  // Aktiviere den Tab
-  tabs.forEach(t=>t.classList.remove('active'));
-  tab.classList.add('active');
-  contents.forEach(c=>c.classList.remove('active'));
-  contents[tab.dataset.origIndex].classList.add('active');
   centerIndex=index;
+}
+
+function activateTab(origIndex){
+  // Zentriere Tab in Mitte
+  const allIndices = tabs.map((t,i)=>i).filter(i=>tabs[i].dataset.origIndex==origIndex);
+  const middleIndex = allIndices[Math.floor(allIndices.length/2)];
+  centerTab(middleIndex);
+  // Markiere Tab active
+  tabs.forEach(t=>t.classList.remove('active'));
+  tabs[middleIndex].classList.add('active');
+  // Zeige den Feed
+  contents.forEach(c=>c.classList.remove('active'));
+  contents[origIndex].classList.add('active');
+  // Schließe Tabs
+  showTabs(false);
 }
 
 function update3DEffect(){
@@ -125,16 +127,7 @@ function update3DEffect(){
   });
 }
 
-tabsBar.addEventListener('scroll', ()=>{
-  update3DEffect();
-  // Endlos-Scroll logik
-  const totalWidth = tabsBar.scrollWidth / 5; // original + duplicates
-  if(tabsBar.scrollLeft < totalWidth){
-    tabsBar.scrollLeft += totalWidth*3;
-  } else if(tabsBar.scrollLeft > totalWidth*4){
-    tabsBar.scrollLeft -= totalWidth*3;
-  }
-});
+tabsBar.addEventListener('scroll', update3DEffect);
 
 // Feeds + Backup
 const FEEDS={
@@ -143,6 +136,7 @@ const FEEDS={
   "feed-tech":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
   "feed-media":["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
 };
+
 function renderItems(items){
   let html="<ul>";
   items.slice(0,12).forEach(item=>{
@@ -153,6 +147,7 @@ function renderItems(items){
   html+="</ul>";
   return html;
 }
+
 function loadFeed(containerId, urls, attempt=0){
   const el=document.getElementById(containerId);
   if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>";
@@ -162,12 +157,8 @@ function loadFeed(containerId, urls, attempt=0){
     .then(res=>{ if(!res.ok) throw new Error("HTTP "+res.status); return res.json(); })
     .then(data=>{
       const items=Array.isArray(data.items)?data.items:[];
-      if(items.length){
-        el.innerHTML=renderItems(items);
-        // Setze den Tab zentriert, wenn Feed geladen
-        const index=["feed-de","feed-int","feed-tech","feed-media"].indexOf(containerId);
-        if(index>=0) centerTab(2*originalTabs.length + index); // zentriert im Originalblock
-      } else loadFeed(containerId,urls,attempt+1);
+      if(items.length) el.innerHTML=renderItems(items);
+      else loadFeed(containerId,urls,attempt+1);
     })
     .catch(()=>loadFeed(containerId,urls,attempt+1));
 }
