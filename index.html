@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>News mit Matrix + 3D Tabs Endless</title>
+<title>News mit Matrix + Swipeable Nav</title>
 <style>
 body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
 canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
 
 .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,18,18,0.85); backdrop-filter:blur(2px); z-index:1; display:flex; flex-direction:column; justify-content:flex-end; }
+
 .content-wrapper { flex-grow:1; display:flex; overflow:hidden; }
 .tab-content { flex:0 0 100%; overflow-y:auto; padding:12em 1em 12em 1em; box-sizing:border-box; display:none; }
 .tab-content.active { display:block; }
@@ -17,7 +18,7 @@ a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
 a:hover { text-decoration:underline; }
 
 .nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
-.nav-button.open { background: rgba(3,218,218,1); }
+.nav-button.open { background: rgba(3,218,198,1); }
 
 .tabs {
   position:fixed;
@@ -25,19 +26,23 @@ a:hover { text-decoration:underline; }
   left:0;
   width:100%;
   height:60px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  overflow:hidden;
   background:rgba(30,30,30,0.8);
+  display:flex;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling: touch;
+  justify-content:flex-start;
+  align-items:center;
   border-top:2px solid #03dac6;
   transition:bottom 0.4s ease;
   z-index:9;
+  overscroll-behavior-x:contain;
 }
 .tabs.show { bottom:90px; }
 
-.tab-container { display:flex; align-items:center; transition: transform 0.2s ease; will-change: transform; }
-.tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; transition: transform 0.2s, color 0.2s; color:white; transform-origin:center bottom; }
+.tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; transition: background 0.3s; scroll-snap-align:start; color:white; }
+.tab:hover { background: rgba(255,255,255,0.1); }
 .tab.active { color:#03dac6; font-weight:bold; }
 
 .tab-content ul { list-style:none; padding:0; margin:0; }
@@ -60,9 +65,10 @@ a:hover { text-decoration:underline; }
   <div class="nav-button" id="navButton">☰</div>
 
   <div class="tabs" id="tabs">
-    <div class="tab-container" id="tabContainer">
-      <!-- Tabs werden dynamisch geklont für unendliches Scrollen -->
-    </div>
+    <div class="tab active" data-index="0">Deutschland</div>
+    <div class="tab" data-index="1">International</div>
+    <div class="tab" data-index="2">Technik</div>
+    <div class="tab" data-index="3">Medien</div>
   </div>
 </div>
 
@@ -134,103 +140,38 @@ function loadFeed(containerId,urls){
 }
 
 // Tabs & Nav
-const navButton=document.getElementById('navButton');
-const tabsBar=document.getElementById('tabs');
-const tabContainer=document.getElementById('tabContainer');
+const navButton=document.getElementById('navButton'),tabsBar=document.getElementById('tabs'),tabs=document.querySelectorAll('.tab'),contents=document.querySelectorAll('.tab-content');
 let tabsVisible=false;
 
-// Original Tabs
-const originalTabs=[
-  {label:'Deutschland', feed:'feed-de'},
-  {label:'International', feed:'feed-int'},
-  {label:'Technik', feed:'feed-tech'},
-  {label:'Medien', feed:'feed-media'}
-];
-
-// Unendlich Scroll: 3x clone
-const allTabs = [];
-for(let i=0;i<3;i++){
-  originalTabs.forEach((t,idx)=>{
-    const tab = document.createElement('div');
-    tab.classList.add('tab');
-    tab.dataset.index = idx;
-    tab.textContent = t.label;
-    tabContainer.appendChild(tab);
-    allTabs.push(tab);
-  });
-}
-let activeIndex = 0;
-const tabs = allTabs;
-const contents=document.querySelectorAll('.tab-content');
-
-// Start: Deutschland
-tabs[originalTabs.length].classList.add('active'); // mittlere Kopie
+// Start mit Deutschland
 contents[0].classList.add('active');
 loadFeed('feed-de',FEEDS['feed-de']);
-centerActiveTab();
+tabs[0].classList.add('active');
 
-// Show/hide Navbar
 function showTabs(show){
   tabsVisible=show;
   tabsBar.classList.toggle('show',show);
   navButton.classList.toggle('open',show);
-  if(show) updateCarousel();
 }
+
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
 
-// Click Tab
 tabs.forEach((tab,i)=>{
   tab.addEventListener('click',()=>{
-    const idx = parseInt(tab.dataset.index);
-    updateActiveTab(idx);
+    tabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    contents.forEach(c=>c.classList.remove('active'));
+    contents[i].classList.add('active');
+    loadFeed(contents[i].id,FEEDS[contents[i].id]);
     showTabs(false);
   });
 });
 
-function updateActiveTab(idx){
-  tabs.forEach(t=>t.classList.remove('active'));
-  tabs.filter(t=>parseInt(t.dataset.index)===idx).forEach(t=>t.classList.add('active'));
-  contents.forEach(c=>c.classList.remove('active'));
-  contents[idx].classList.add('active');
-  loadFeed(contents[idx].id,FEEDS[contents[idx].id]);
-  activeIndex=idx;
-  updateCarousel();
-}
-
-// Carousel 3D
-function updateCarousel(){
-  const centerX = tabsBar.clientWidth / 2;
-  tabs.forEach((tab,i)=>{
-    const tabRect = tab.getBoundingClientRect();
-    const tabCenter = tabRect.left + tabRect.width/2 - tabsBar.getBoundingClientRect().left;
-    const offset = (tabCenter - centerX)/150;
-    const scale = Math.max(0.6,1-Math.abs(offset)/3);
-    const rotateY = offset*25;
-    tab.style.transform = `perspective(600px) translateZ(${(scale-1)*50}px) scale(${scale}) rotateY(${rotateY}deg)`;
-  });
-  centerActiveTab();
-}
-
-// Center active tab in middle clone
-function centerActiveTab(){
-  const centerTab = tabs.find(t=>t.classList.contains('active'));
-  const tabsRect = tabsBar.getBoundingClientRect();
-  const tabRect = centerTab.getBoundingClientRect();
-  const offset = tabRect.left - tabsRect.left - tabsRect.width/2 + tabRect.width/2;
-  tabContainer.style.transform = `translateX(${-offset}px)`;
-}
-
-// Swipe
-let startX=0,startTransform=0;
-tabsBar.addEventListener('touchstart',e=>{
-  startX=e.touches[0].clientX;
-  startTransform=parseFloat(tabContainer.style.transform.replace('translateX(','').replace('px)',''))||0;
-});
-tabsBar.addEventListener('touchmove',e=>{
-  const dx = e.touches[0].clientX - startX;
-  tabContainer.style.transform = `translateX(${startTransform + dx}px)`;
-  updateCarousel();
-});
+// Swipe/Scroll Tabs
+let startX=0,scrollStart=0;
+tabsBar.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; scrollStart=tabsBar.scrollLeft; });
+tabsBar.addEventListener('touchmove',e=>{ const dx=startX - e.touches[0].clientX; tabsBar.scrollLeft = scrollStart + dx; });
 </script>
+
 </body>
 </html>
