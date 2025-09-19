@@ -3,30 +3,39 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>News mit Matrix + Endless Carousel Nav</title>
+<title>News mit Matrix + Swipeable Nav</title>
 <style>
 body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
 canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
+
 .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,18,18,0.85); backdrop-filter:blur(2px); z-index:1; display:flex; flex-direction:column; justify-content:flex-end; }
+
 .content-wrapper { flex-grow:1; display:flex; overflow:hidden; }
 .tab-content { flex:0 0 100%; overflow-y:auto; padding:12em 1em 12em 1em; box-sizing:border-box; display:none; }
 .tab-content.active { display:block; }
+
 a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
 a:hover { text-decoration:underline; }
-.nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s; }
-.nav-button.open { background:rgba(3,218,198,1); }
-.tabs { position:fixed; bottom:90px; left:0; width:100%; height:80px; display:flex; justify-content:center; align-items:center; pointer-events:none; opacity:0; transition:opacity 0.4s; z-index:9; }
-.tabs.show { opacity:1; pointer-events:all; }
-.tab-carousel { display:flex; flex-wrap:nowrap; overflow-x:hidden; transform-style:preserve-3d; perspective:800px; pointer-events:all; }
-.tab { flex:0 0 auto; padding:0.5em 1em; margin:0 10px; cursor:pointer; border-radius:8px; background:rgba(30,30,30,0.8); color:white; transition:transform 0.3s, font-size 0.3s, background 0.3s; white-space:nowrap; text-align:center; }
-.tab.active { color:#03dac6; font-weight:bold; background:rgba(50,50,50,0.9); }
+
+.nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition: background 0.3s, transform 0.3s; }
+.nav-button.open { background: rgba(3,218,198,1); }
+
+.tabs { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); height:80px; display:flex; align-items:center; justify-content:center; transition: opacity 0.4s, bottom 0.4s; opacity:0; z-index:9; }
+.tabs.show { opacity:1; }
+
+.tab { position:absolute; cursor:pointer; padding:0.5em 1em; white-space:nowrap; color:white; transition: all 0.3s; font-weight:bold; }
+
+.tab.active { color:#03dac6; }
+
 .tab-content ul { list-style:none; padding:0; margin:0; }
 .tab-content li { margin:0.5em 0; }
 .muted { color:#aaa; font-size:0.9em; }
 </style>
 </head>
 <body>
+
 <canvas id="matrixCanvas"></canvas>
+
 <div class="overlay">
   <div class="content-wrapper">
     <div class="tab-content active" data-tab="0" id="feed-de"></div>
@@ -34,14 +43,14 @@ a:hover { text-decoration:underline; }
     <div class="tab-content" data-tab="2" id="feed-tech"></div>
     <div class="tab-content" data-tab="3" id="feed-media"></div>
   </div>
+
   <div class="nav-button" id="navButton">☰</div>
+
   <div class="tabs" id="tabs">
-    <div class="tab-carousel" id="tabCarousel">
-      <div class="tab" data-index="0">Deutschland</div>
-      <div class="tab" data-index="1">International</div>
-      <div class="tab" data-index="2">Technik</div>
-      <div class="tab" data-index="3">Medien</div>
-    </div>
+    <div class="tab" data-index="0">Deutschland</div>
+    <div class="tab" data-index="1">International</div>
+    <div class="tab" data-index="2">Technik</div>
+    <div class="tab" data-index="3">Medien</div>
   </div>
 </div>
 
@@ -64,75 +73,26 @@ function drawMatrix(){
 }
 setInterval(drawMatrix,35);
 
-// Tabs & Nav-Button
-const navButton=document.getElementById('navButton'),tabsContainer=document.getElementById('tabs'),carousel=document.getElementById('tabCarousel'),tabs=document.querySelectorAll('.tab'),contents=document.querySelectorAll('.tab-content');
-let tabsVisible=false;
-const TAB_WIDTH=120; // Breite inkl. Margin
-const TAB_COUNT=tabs.length;
-
-// Clone tabs for unendliches Scrollen
-for(let i=0;i<TAB_COUNT;i++){
-  const cloneBefore=tabs[i].cloneNode(true);
-  cloneBefore.classList.add('clone');
-  carousel.insertBefore(cloneBefore, carousel.firstChild);
-  const cloneAfter=tabs[i].cloneNode(true);
-  cloneAfter.classList.add('clone');
-  carousel.appendChild(cloneAfter);
-}
-
-let currentIndex=0;
-
-function updateCarousel(){
-  const centerX=carousel.parentElement.offsetWidth/2;
-  const children=carousel.children;
-  for(let i=0;i<children.length;i++){
-    const tabEl=children[i];
-    const tabCenter=(tabEl.offsetLeft + tabEl.offsetWidth/2)-carousel.scrollLeft;
-    const offset=centerX - tabCenter;
-    const scale=Math.max(0.6,1 - Math.abs(offset)/400);
-    const rotateY=offset/10;
-    tabEl.style.transform=`translateX(${offset}px) scale(${scale}) rotateY(${rotateY}deg)`;
-  }
-}
-
-function scrollToIndex(index){
-  const baseIndex=index+TAB_COUNT; // zentrieren auf mittlere Kopie
-  const target=baseIndex*TAB_WIDTH - carousel.parentElement.offsetWidth/2 + TAB_WIDTH/2;
-  carousel.scrollLeft=target;
-  updateCarousel();
-}
-
-// Nav-Button
-navButton.addEventListener('click',()=>{
-  tabsVisible=!tabsVisible;
-  tabsContainer.classList.toggle('show',tabsVisible);
-  navButton.classList.toggle('open',tabsVisible);
-  if(tabsVisible) scrollToIndex(currentIndex);
-});
-
-// Tab click
-carousel.addEventListener('click',e=>{
-  const tab=e.target.closest('.tab');
-  if(!tab) return;
-  const idx=parseInt(tab.dataset.index);
-  currentIndex=idx;
-  updateActiveTab();
-  scrollToIndex(currentIndex);
-  showFeed(idx);
-});
-
-function updateActiveTab(){
-  tabs.forEach(t=>t.classList.remove('active'));
-  tabs[currentIndex].classList.add('active');
-}
-
-// Feed + Backup
+// Feeds
 const FEEDS={
-  "feed-de":["https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml","https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"],
-  "feed-int":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"],
-  "feed-tech":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
-  "feed-media":["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
+  "feed-de":[
+    "https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml",
+    "https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"
+  ],
+  "feed-int":[
+    "https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922",
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"
+  ],
+  "feed-tech":[
+    "https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122",
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"
+  ],
+  "feed-media":[
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss",
+    "https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"
+  ]
 };
+
 function renderItems(items){
   let html="<ul>";
   items.slice(0,12).forEach(item=>{
@@ -143,30 +103,70 @@ function renderItems(items){
   html+="</ul>"; return html;
 }
 
-function showFeed(idx){
-  const ids=["feed-de","feed-int","feed-tech","feed-media"];
-  const container=document.getElementById(ids[idx]);
-  contents.forEach(c=>c.classList.remove('active'));
-  container.classList.add('active');
-
-  const urls=FEEDS[ids[idx]];
-  container.innerHTML="<p class='muted'>Lade Feed…</p>";
-  fetch(urls[0]).then(r=>r.json()).then(data=>{
-    const items=Array.isArray(data.items)?data.items:[];
-    container.innerHTML=items.length?renderItems(items):"<p class='muted'>Keine Einträge gefunden.</p>";
-  }).catch(()=>fetch(urls[1]).then(r=>r.json()).then(data=>{
-    const items=Array.isArray(data.items)?data.items:[];
-    container.innerHTML=items.length?renderItems(items):"<p class='muted'>Feed konnte nicht geladen werden.</p>";
-  }));
+function loadFeed(containerId,urls){
+  const el=document.getElementById(containerId);
+  el.innerHTML="<p class='muted'>Lade Feed…</p>";
+  let attempt=0;
+  function tryLoad(){
+    if(!urls[attempt]) { el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
+    fetch(urls[attempt])
+      .then(res=>res.json())
+      .then(data=>{
+        const items=Array.isArray(data.items)?data.items:[];
+        if(items.length) el.innerHTML=renderItems(items);
+        else { attempt++; tryLoad(); }
+      })
+      .catch(()=>{ attempt++; tryLoad(); });
+  }
+  tryLoad();
 }
 
-// Init
-updateActiveTab();
-showFeed(currentIndex);
-updateCarousel();
+// Tabs & Nav
+const navButton=document.getElementById('navButton'),tabsBar=document.getElementById('tabs'),tabs=document.querySelectorAll('.tab'),contents=document.querySelectorAll('.tab-content');
+let tabsVisible=false,activeIndex=0;
 
-// Endless Scroll Update
-carousel.addEventListener('scroll',()=>{ updateCarousel(); });
+// Start mit Deutschland feed
+contents[0].classList.add('active');
+loadFeed('feed-de',FEEDS['feed-de']);
+tabs[0].classList.add('active');
+
+function showTabs(show){
+  tabsVisible=show;
+  tabsBar.classList.toggle('show',show);
+  navButton.classList.toggle('open',show);
+  if(show) centerActiveTab();
+}
+
+navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
+
+tabs.forEach((tab,i)=>{
+  tab.addEventListener('click',()=>{
+    activeIndex=i;
+    tabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    contents.forEach(c=>c.classList.remove('active'));
+    contents[i].classList.add('active');
+    loadFeed(c.id,FEEDS[c.id]);
+    showTabs(false);
+  });
+});
+
+// Endless Carousel
+let carousel = [];
+function updateCarousel(){
+  const centerX = window.innerWidth/2;
+  const spacing = 120; // Abstand zwischen Tabs
+  tabs.forEach((tab,i)=>{
+    const offset = i - activeIndex;
+    const scale = Math.max(0.6,1 - Math.abs(offset)*0.2);
+    tab.style.transform=`translateX(${centerX + offset*spacing - tab.offsetWidth/2}px) scale(${scale})`;
+    tab.style.zIndex = 100 - Math.abs(offset);
+  });
+}
+function centerActiveTab(){
+  updateCarousel();
+}
+updateCarousel();
 </script>
 </body>
 </html>
