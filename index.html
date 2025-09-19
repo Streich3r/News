@@ -19,7 +19,7 @@ a:hover { text-decoration:underline; }
 .nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:background 0.3s; }
 .nav-button.open { background:rgba(3,218,218,1); }
 
-.tabs-wrapper { position:fixed; bottom:0; left:0; width:100%; height:60px; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; display:flex; justify-content:center; overflow:hidden; z-index:9; transform:translateY(100%); transition:transform 0.4s; }
+.tabs-wrapper { position:fixed; bottom:100px; left:0; width:100%; height:60px; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; display:flex; justify-content:center; overflow:hidden; z-index:9; transform:translateY(100%); transition:transform 0.4s; }
 .tabs-wrapper.show { transform:translateY(0); }
 .tabs { display:flex; transition: transform 0.3s; will-change: transform; }
 .tab { flex:0 0 auto; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 10px; transition: transform 0.3s, font-size 0.3s, color 0.3s; color:white; font-size:1em; text-align:center; }
@@ -78,9 +78,9 @@ const CONTENT_IDS=["feed-de","feed-int","feed-tech","feed-media"];
 const tabNames=["Deutschland","International","Technik","Medien"];
 const tabsContainer=document.getElementById('tabs');
 const tabsWrapper=document.getElementById('tabsWrapper');
-let repeatedTabs=[]; const repeatCount=7;
+let repeatedTabs=[], repeatCount=10; // für unendliches Scrollen
 
-// Repeat tabs für Endlos
+// Wiederholte Tabs erstellen
 for(let i=0;i<repeatCount;i++){
   tabNames.forEach((name,index)=>{
     const t=document.createElement('div');
@@ -92,6 +92,7 @@ for(let i=0;i<repeatCount;i++){
   });
 }
 
+// Nav Button
 const navButton=document.getElementById('navButton');
 let tabsVisible=false;
 function showTabs(show){
@@ -102,18 +103,16 @@ function showTabs(show){
 }
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
 
-// Active management & feed load
+// Tab click
 repeatedTabs.forEach(tab=>{
   tab.addEventListener('click',()=>{
     const idx=parseInt(tab.dataset.index);
-    // mark active
     repeatedTabs.forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
-    // show feed
     CONTENT_IDS.forEach(c=>document.getElementById(c).classList.remove('active'));
     const content=document.getElementById(CONTENT_IDS[idx]);
     content.classList.add('active');
-    // load feed
+    // Feed laden
     content.innerHTML="<p class='muted'>Lade Feed…</p>";
     function tryLoad(urls,attempt=0){
       if(!urls[attempt]){ content.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
@@ -175,7 +174,6 @@ window.addEventListener('load', ()=>{
   firstTab.classList.add('active');
   document.getElementById("feed-de").classList.add('active');
 
-  // load deutschland feed sofort
   const content=document.getElementById("feed-de");
   content.innerHTML="<p class='muted'>Lade Feed…</p>";
   function tryLoad(urls,attempt=0){
@@ -190,7 +188,6 @@ window.addEventListener('load', ()=>{
 
   centerTab(firstTab);
 });
-window.addEventListener('resize', updateTabsTransform);
 </script>
 
 </body>
