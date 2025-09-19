@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>News mit Matrix + 3D Carousel Nav</title>
+<title>News mit Matrix + 3D Carousel Tabs</title>
 <style>
 body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
 canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
+
 .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,18,18,0.85); backdrop-filter:blur(2px); z-index:1; display:flex; flex-direction:column; justify-content:flex-end; }
 .content-wrapper { flex-grow:1; display:flex; overflow:hidden; }
 .tab-content { flex:0 0 100%; overflow-y:auto; padding:12em 1em 12em 1em; box-sizing:border-box; display:none; }
@@ -14,12 +15,15 @@ canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-
 a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
 a:hover { text-decoration:underline; }
 
-.nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:background 0.3s, opacity 0.3s; }
-.nav-button.open { background: rgba(3,218,218,1); }
+.nav-button { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:background 0.3s; }
+.nav-button.open { background: rgba(3,218,198,1.0); }
 
-.tabs { position:fixed; bottom:90px; left:0; width:100%; height:80px; display:flex; overflow-x:scroll; overflow-y:hidden; justify-content:flex-start; align-items:center; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; z-index:9; padding:0 100px; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; }
-.tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; color:white; transition: transform 0.3s, font-size 0.3s, color 0.3s, opacity 0.3s; }
-.tab.active { color:#03dac6; font-weight:bold; font-size:1.3em; }
+.tabs { position:fixed; bottom:-70px; left:0; width:100%; height:80px; display:flex; overflow-x:hidden; justify-content:center; align-items:center; background:rgba(30,30,30,0.8); border-top:2px solid #03dac6; transition:bottom 0.4s ease; z-index:9; perspective:1000px; }
+.tabs.show { bottom:90px; }
+
+.tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; color:white; text-align:center; transition: transform 0.3s, font-size 0.3s, opacity 0.3s; transform-origin:center center; }
+.tab.active { color:#03dac6; font-weight:bold; }
+
 .tab-content ul { list-style:none; padding:0; margin:0; }
 .tab-content li { margin:0.5em 0; }
 .muted { color:#aaa; font-size:0.9em; }
@@ -37,143 +41,123 @@ a:hover { text-decoration:underline; }
 
   <div class="nav-button" id="navButton">☰</div>
 
-  <div class="tabs" id="tabs"></div>
+  <div class="tabs" id="tabs">
+    <div class="tab" data-index="0">Deutschland</div>
+    <div class="tab" data-index="1">International</div>
+    <div class="tab" data-index="2">Technik</div>
+    <div class="tab" data-index="3">Medien</div>
+  </div>
 </div>
 
 <script>
-// Matrix
+// Matrix Regen
 const canvas=document.getElementById('matrixCanvas'), ctx=canvas.getContext('2d');
 function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
-window.addEventListener('resize', resizeCanvas); resizeCanvas();
+window.addEventListener('resize',resizeCanvas); resizeCanvas();
 const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=+/<>*', fontSize=16;
 let columns=Math.floor(canvas.width/fontSize), drops=Array(columns).fill(1);
 function drawMatrix(){
   ctx.fillStyle='rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle='#0f0'; ctx.font=fontSize+'px monospace';
   for(let i=0;i<drops.length;i++){
-    ctx.fillText(letters.charAt(Math.floor(Math.random()*letters.length)), i*fontSize, drops[i]*fontSize);
+    const text=letters.charAt(Math.floor(Math.random()*letters.length));
+    ctx.fillText(text,i*fontSize,drops[i]*fontSize);
     if(drops[i]*fontSize>canvas.height && Math.random()>0.975) drops[i]=0;
     drops[i]++;
   }
 }
 setInterval(drawMatrix,35);
 
-// Tabs + Nav
-const navButton=document.getElementById('navButton'), tabsBar=document.getElementById('tabs');
+// Tabs & Nav-Button
+const navButton=document.getElementById('navButton');
+const tabsBar=document.getElementById('tabs');
+const tabs=document.querySelectorAll('.tab');
+const contents=document.querySelectorAll('.tab-content');
 let tabsVisible=false;
-const originalTabs = ["Deutschland","International","Technik","Medien"];
-let tabs=[]; 
-let centerIndex=0;
 
-// Unendliche Tabs: 5x wiederholen
-function createTabs(){
-  tabsBar.innerHTML="";
-  tabs=[];
-  const repeat=5;
-  let allLabels=[];
-  for(let i=0;i<repeat;i++) allLabels=allLabels.concat(originalTabs);
-  allLabels.forEach((label,i)=>{
-    const tab=document.createElement('div');
-    tab.className="tab";
-    tab.innerText=label;
-    tab.dataset.origIndex=i % originalTabs.length;
-    tab.addEventListener('click',()=> activateTab(tab.dataset.origIndex));
-    tabsBar.appendChild(tab);
-    tabs.push(tab);
-  });
-  // Scroll initial zur Mitte (3. Wiederholung)
-  const midIndex = Math.floor(originalTabs.length * Math.floor(repeat/2));
-  centerTab(midIndex, false);
-}
-
-// Nav
 function showTabs(show){
   tabsVisible=show;
-  tabsBar.style.display = show ? "flex" : "none";
+  tabsBar.classList.toggle('show',show);
   navButton.classList.toggle('open',show);
-  navButton.style.opacity = show?1:0.7;
-  update3DEffect();
-}
-navButton.addEventListener('click', ()=> showTabs(!tabsVisible));
-
-// Zentrieren und 3D
-function centerTab(index, smooth=true){
-  const tab=tabs[index];
-  if(!tab) return;
-  const center=(tabsBar.offsetWidth/2) - (tab.offsetWidth/2);
-  tabsBar.scrollTo({ left: tab.offsetLeft - center, behavior: smooth?'smooth':'auto' });
-  centerIndex=index;
-  update3DEffect();
-  updateActiveFeed();
+  updateTabs3D(); // initial 3D update
 }
 
-// Feed nur bei aktiven Tab
-function updateActiveFeed(){
-  const tab = tabs[centerIndex];
-  if(!tab) return;
-  const origIndex = parseInt(tab.dataset.origIndex);
-  tabs.forEach(t=>t.classList.remove('active'));
-  tab.classList.add('active');
-  contents.forEach(c=>c.classList.remove('active'));
-  contents[origIndex].classList.add('active');
-}
+navButton.addEventListener('click',()=>showTabs(!tabsVisible));
 
-// Aktivieren über Klick
-function activateTab(origIndex){
-  const allIndices = tabs.map((t,i)=>i).filter(i=>parseInt(t.dataset.origIndex)==origIndex);
-  const middleIndex = allIndices[Math.floor(allIndices.length/2)];
-  centerTab(middleIndex);
-  showTabs(false);
-}
-
-// 3D Effekt
-function update3DEffect(){
-  const centerX = tabsBar.scrollLeft + tabsBar.offsetWidth/2;
-  tabs.forEach(tab=>{
-    const tabCenter = tab.offsetLeft + tab.offsetWidth/2;
-    const distance = (tabCenter - centerX)/200;
-    const scale = Math.max(0.6, 1 - Math.abs(distance));
-    const angle = distance*25;
-    tab.style.transform = `perspective(600px) rotateY(${angle}deg) scale(${scale})`;
-    tab.style.opacity = scale;
-  });
-}
-
-// Unendliche Scroll
-tabsBar.addEventListener('scroll', ()=>{
-  const scrollLeft = tabsBar.scrollLeft;
-  const totalTabs = tabs.length;
-  const third = Math.floor(totalTabs/5);
-  if(scrollLeft < tabs[third].offsetLeft - tabs[0].offsetWidth){
-    tabsBar.scrollLeft += originalTabs.length * tabs[0].offsetWidth;
-  } else if(scrollLeft > tabs[third*4].offsetLeft){
-    tabsBar.scrollLeft -= originalTabs.length * tabs[0].offsetWidth;
-  }
-  // Mittleren Tab bestimmen
-  let closestIndex=0, minDist=Infinity;
-  const center = tabsBar.scrollLeft + tabsBar.offsetWidth/2;
+// 3D Carousel Logik
+function updateTabs3D(centerIndex=null){
+  const centerX=window.innerWidth/2;
   tabs.forEach((tab,i)=>{
-    const tabCenter = tab.offsetLeft + tab.offsetWidth/2;
-    const dist=Math.abs(tabCenter-center);
-    if(dist<minDist){ minDist=dist; closestIndex=i; }
+    let offset=i-(centerIndex!==null?centerIndex:0);
+    let scale=Math.max(0.7,1 - Math.abs(offset)*0.2);
+    let rotateY=offset*25; 
+    let zIndex=Math.round(scale*100);
+    tab.style.transform=`translateX(${offset*80}px) scale(${scale}) rotateY(${rotateY}deg)`;
+    tab.style.zIndex=zIndex;
   });
-  centerIndex=closestIndex;
-  update3DEffect();
-  updateActiveFeed();
+}
+
+function centerTab(index){
+  updateTabs3D(index);
+}
+
+// Tab-Klick
+tabs.forEach((tab,index)=>{
+  tab.addEventListener('click',()=>{
+    contents.forEach(c=>c.classList.remove('active'));
+    contents[index].classList.add('active');
+
+    tabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+
+    centerTab(index);
+    showTabs(false);
+    loadFeedByIndex(index);
+  });
 });
 
-// Feeds + Backup
+// Endless Scroll (Links/Rechts klonen)
+let totalTabs=tabs.length;
+function cloneTabsForScroll(){
+  const wrapper=document.createDocumentFragment();
+  for(let i=0;i<totalTabs;i++){
+    const cloneStart=tabs[i].cloneNode(true);
+    cloneStart.classList.add('clone');
+    wrapper.appendChild(cloneStart);
+    const cloneEnd=tabs[i].cloneNode(true);
+    cloneEnd.classList.add('clone');
+    wrapper.appendChild(cloneEnd);
+  }
+  tabsBar.appendChild(wrapper);
+}
+cloneTabsForScroll();
+
+// Feed-Quellen
 const FEEDS={
-  "feed-de":["https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml","https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"],
-  "feed-int":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"],
-  "feed-tech":["https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122","https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"],
-  "feed-media":["https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss","https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"]
+  "feed-de":[
+    "https://feeds.streich3r.org/feed?url=https://www.tagesschau.de/inland/index~rss2.xml",
+    "https://feeds.streich3r.org/feed?url=https://www.sueddeutsche.de/rss"
+  ],
+  "feed-int":[
+    "https://feeds.streich3r.org/feed?url=https://www.srf.ch/news/bnf/rss/1922",
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/international.rss"
+  ],
+  "feed-tech":[
+    "https://feeds.streich3r.org/feed?url=https://www.srf.ch/bnf/rss/19920122",
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/technologie.rss"
+  ],
+  "feed-media":[
+    "https://feeds.streich3r.org/feed?url=https://www.nzz.ch/feuilleton.rss",
+    "https://feeds.streich3r.org/feed?url=https://www.derbund.ch/arc/outboundfeeds/rss/category/medien"
+  ]
 };
 
 function renderItems(items){
   let html="<ul>";
   items.slice(0,12).forEach(item=>{
-    const title=item.title||"Kein Titel", link=item.link||"#", date=item.pubDate||item.isoDate||"";
+    const title=item.title||"Kein Titel";
+    const link=item.link||"#";
+    const date=item.pubDate||item.isoDate||"";
     const dateHtml=date?`<div class="muted">${new Date(date).toLocaleString()}</div>`:"";
     html+=`<li><a href="${link}" target="_blank" rel="noopener">${title}</a>${dateHtml}</li>`;
   });
@@ -181,11 +165,16 @@ function renderItems(items){
   return html;
 }
 
-function loadFeed(containerId, urls, attempt=0){
+function loadFeedByIndex(index){
+  const feedId=contents[index].id;
+  const urls=FEEDS[feedId];
+  loadFeed(feedId,urls);
+}
+
+function loadFeed(containerId,urls,attempt=0){
   const el=document.getElementById(containerId);
   if(attempt===0) el.innerHTML="<p class='muted'>Lade Feed…</p>";
   if(!urls[attempt]){ el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
-
   fetch(urls[attempt])
     .then(res=>{ if(!res.ok) throw new Error("HTTP "+res.status); return res.json(); })
     .then(data=>{
@@ -193,12 +182,22 @@ function loadFeed(containerId, urls, attempt=0){
       if(items.length) el.innerHTML=renderItems(items);
       else loadFeed(containerId,urls,attempt+1);
     })
-    .catch(()=>loadFeed(containerId,urls,attempt+1));
+    .catch(()=>{ loadFeed(containerId,urls,attempt+1); });
 }
 
-// Init
-createTabs();
-for(const [id,urls] of Object.entries(FEEDS)) loadFeed(id,urls);
+// Optional: Swipe / Drag
+let startX=0, scrollLeft=0;
+tabsBar.addEventListener('mousedown',e=>{ startX=e.pageX; scrollLeft=tabsBar.scrollLeft; tabsBar.style.cursor='grabbing';});
+tabsBar.addEventListener('mouseup',e=>{ tabsBar.style.cursor='grab'; });
+tabsBar.addEventListener('mouseleave',e=>{ tabsBar.style.cursor='grab'; });
+tabsBar.addEventListener('mousemove',e=>{
+  if(startX===null) return;
+  const dx=startX-e.pageX;
+  tabsBar.scrollLeft=scrollLeft+dx;
+});
+tabsBar.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; scrollLeft=tabsBar.scrollLeft; });
+tabsBar.addEventListener('touchmove',e=>{ const dx=startX-e.touches[0].clientX; tabsBar.scrollLeft=scrollLeft+dx; });
+
 </script>
 </body>
 </html>
