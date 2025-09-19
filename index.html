@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>News mit Matrix + 3D Tabs</title>
+<title>News mit Matrix + 3D Tabs Endless</title>
 <style>
 body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
 canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
@@ -37,7 +37,6 @@ a:hover { text-decoration:underline; }
 .tabs.show { bottom:90px; }
 
 .tab-container { display:flex; align-items:center; transition: transform 0.2s ease; will-change: transform; }
-
 .tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer; white-space:nowrap; border-radius:8px; margin:0 5px; transition: transform 0.2s, color 0.2s; color:white; transform-origin:center bottom; }
 .tab.active { color:#03dac6; font-weight:bold; }
 
@@ -62,16 +61,13 @@ a:hover { text-decoration:underline; }
 
   <div class="tabs" id="tabs">
     <div class="tab-container" id="tabContainer">
-      <div class="tab" data-index="0">Deutschland</div>
-      <div class="tab" data-index="1">International</div>
-      <div class="tab" data-index="2">Technik</div>
-      <div class="tab" data-index="3">Medien</div>
+      <!-- Tabs werden dynamisch geklont für unendliches Scrollen -->
     </div>
   </div>
 </div>
 
 <script>
-// Matrix
+// Matrix Regen
 const canvas=document.getElementById('matrixCanvas'),ctx=canvas.getContext('2d');
 function resizeCanvas(){canvas.width=window.innerWidth; canvas.height=window.innerHeight;}
 window.addEventListener('resize',resizeCanvas); resizeCanvas();
@@ -143,15 +139,35 @@ const tabsBar=document.getElementById('tabs');
 const tabContainer=document.getElementById('tabContainer');
 let tabsVisible=false;
 
-const tabs = Array.from(tabContainer.children);
-let activeIndex = 0;
+// Original Tabs
+const originalTabs=[
+  {label:'Deutschland', feed:'feed-de'},
+  {label:'International', feed:'feed-int'},
+  {label:'Technik', feed:'feed-tech'},
+  {label:'Medien', feed:'feed-media'}
+];
 
-// Start mit Deutschland
+// Unendlich Scroll: 3x clone
+const allTabs = [];
+for(let i=0;i<3;i++){
+  originalTabs.forEach((t,idx)=>{
+    const tab = document.createElement('div');
+    tab.classList.add('tab');
+    tab.dataset.index = idx;
+    tab.textContent = t.label;
+    tabContainer.appendChild(tab);
+    allTabs.push(tab);
+  });
+}
+let activeIndex = 0;
+const tabs = allTabs;
 const contents=document.querySelectorAll('.tab-content');
-contents.forEach(c=>c.classList.remove('active'));
+
+// Start: Deutschland
+tabs[originalTabs.length].classList.add('active'); // mittlere Kopie
 contents[0].classList.add('active');
 loadFeed('feed-de',FEEDS['feed-de']);
-tabs[0].classList.add('active');
+centerActiveTab();
 
 // Show/hide Navbar
 function showTabs(show){
@@ -160,24 +176,24 @@ function showTabs(show){
   navButton.classList.toggle('open',show);
   if(show) updateCarousel();
 }
-
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
 
 // Click Tab
 tabs.forEach((tab,i)=>{
   tab.addEventListener('click',()=>{
-    updateActiveTab(i);
+    const idx = parseInt(tab.dataset.index);
+    updateActiveTab(idx);
     showTabs(false);
   });
 });
 
-function updateActiveTab(index){
+function updateActiveTab(idx){
   tabs.forEach(t=>t.classList.remove('active'));
-  tabs[index].classList.add('active');
-  contents.forEach((c,i)=>c.classList.remove('active'));
-  contents[index].classList.add('active');
-  loadFeed(contents[index].id,FEEDS[contents[index].id]);
-  activeIndex=index;
+  tabs.filter(t=>parseInt(t.dataset.index)===idx).forEach(t=>t.classList.add('active'));
+  contents.forEach(c=>c.classList.remove('active'));
+  contents[idx].classList.add('active');
+  loadFeed(contents[idx].id,FEEDS[contents[idx].id]);
+  activeIndex=idx;
   updateCarousel();
 }
 
@@ -187,32 +203,32 @@ function updateCarousel(){
   tabs.forEach((tab,i)=>{
     const tabRect = tab.getBoundingClientRect();
     const tabCenter = tabRect.left + tabRect.width/2 - tabsBar.getBoundingClientRect().left;
-    const offset = (tabCenter - centerX)/150; // adjust for spacing
+    const offset = (tabCenter - centerX)/150;
     const scale = Math.max(0.6,1-Math.abs(offset)/3);
-    const rotateY = offset*25; // degrees
+    const rotateY = offset*25;
     tab.style.transform = `perspective(600px) translateZ(${(scale-1)*50}px) scale(${scale}) rotateY(${rotateY}deg)`;
   });
   centerActiveTab();
 }
 
-// Center active tab
+// Center active tab in middle clone
 function centerActiveTab(){
-  const activeTab = tabs[activeIndex];
+  const centerTab = tabs.find(t=>t.classList.contains('active'));
   const tabsRect = tabsBar.getBoundingClientRect();
-  const tabRect = activeTab.getBoundingClientRect();
+  const tabRect = centerTab.getBoundingClientRect();
   const offset = tabRect.left - tabsRect.left - tabsRect.width/2 + tabRect.width/2;
   tabContainer.style.transform = `translateX(${-offset}px)`;
 }
 
 // Swipe
-let startX=0, startTransform=0;
+let startX=0,startTransform=0;
 tabsBar.addEventListener('touchstart',e=>{
   startX=e.touches[0].clientX;
   startTransform=parseFloat(tabContainer.style.transform.replace('translateX(','').replace('px)',''))||0;
 });
 tabsBar.addEventListener('touchmove',e=>{
-  const dx=startX - e.touches[0].clientX;
-  tabContainer.style.transform = `translateX(${startTransform - dx}px)`;
+  const dx = e.touches[0].clientX - startX;
+  tabContainer.style.transform = `translateX(${startTransform + dx}px)`;
   updateCarousel();
 });
 </script>
