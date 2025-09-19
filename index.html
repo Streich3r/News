@@ -65,10 +65,11 @@ const originalTabs = ["Deutschland","International","Technik","Medien"];
 let tabs=[]; 
 let centerIndex=0;
 
+// Unendliche Tabs: 5x wiederholen
 function createTabs(){
   tabsBar.innerHTML="";
   tabs=[];
-  const repeat=3;
+  const repeat=5;
   let allLabels=[];
   for(let i=0;i<repeat;i++) allLabels=allLabels.concat(originalTabs);
   allLabels.forEach((label,i)=>{
@@ -80,9 +81,12 @@ function createTabs(){
     tabsBar.appendChild(tab);
     tabs.push(tab);
   });
-  centerTab(originalTabs.length); // initial zentrieren
+  // Scroll initial zur Mitte (3. Wiederholung)
+  const midIndex = Math.floor(originalTabs.length * Math.floor(repeat/2));
+  centerTab(midIndex, false);
 }
 
+// Nav
 function showTabs(show){
   tabsVisible=show;
   tabsBar.style.display = show ? "flex" : "none";
@@ -92,29 +96,28 @@ function showTabs(show){
 }
 navButton.addEventListener('click', ()=> showTabs(!tabsVisible));
 
-function centerTab(index){
+// Zentrieren und 3D
+function centerTab(index, smooth=true){
   const tab=tabs[index];
   const center=(tabsBar.offsetWidth/2) - (tab.offsetWidth/2);
-  tabsBar.scrollTo({ left: tab.offsetLeft - center, behavior:'smooth' });
-  update3DEffect();
+  tabsBar.scrollTo({ left: tab.offsetLeft - center, behavior: smooth?'smooth':'auto' });
   centerIndex=index;
+  update3DEffect();
 }
 
 function activateTab(origIndex){
-  // Zentriere Tab in Mitte
+  // Finde mittleren Tab dieser Index
   const allIndices = tabs.map((t,i)=>i).filter(i=>tabs[i].dataset.origIndex==origIndex);
   const middleIndex = allIndices[Math.floor(allIndices.length/2)];
   centerTab(middleIndex);
-  // Markiere Tab active
   tabs.forEach(t=>t.classList.remove('active'));
   tabs[middleIndex].classList.add('active');
-  // Zeige den Feed
   contents.forEach(c=>c.classList.remove('active'));
   contents[origIndex].classList.add('active');
-  // Schließe Tabs
   showTabs(false);
 }
 
+// 3D Effekt
 function update3DEffect(){
   const centerX = tabsBar.scrollLeft + tabsBar.offsetWidth/2;
   tabs.forEach(tab=>{
@@ -127,7 +130,21 @@ function update3DEffect(){
   });
 }
 
-tabsBar.addEventListener('scroll', update3DEffect);
+// Endlos Scroll Logik
+tabsBar.addEventListener('scroll', ()=>{
+  const scrollLeft = tabsBar.scrollLeft;
+  const scrollWidth = tabsBar.scrollWidth;
+  const visibleWidth = tabsBar.offsetWidth;
+  // Reposition wenn zu weit links/rechts
+  const totalTabs = tabs.length;
+  const third = Math.floor(totalTabs/5);
+  if(scrollLeft < tabs[third].offsetLeft - tabs[0].offsetWidth){
+    tabsBar.scrollLeft += originalTabs.length * tabs[0].offsetWidth;
+  } else if(scrollLeft > tabs[third*4].offsetLeft){
+    tabsBar.scrollLeft -= originalTabs.length * tabs[0].offsetWidth;
+  }
+  update3DEffect();
+});
 
 // Feeds + Backup
 const FEEDS={
