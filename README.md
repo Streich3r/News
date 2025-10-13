@@ -1,13 +1,12 @@
 
-# Nachrichten Swipe Webseite
+# News Webseite
 
-Dies ist eine minimalistische, mobile Webseite mit Tabs unten und Swipe-Funktion.
+Simple News
 
 ## Features
 
-- Dark Mode
-- Swipe links/rechts zwischen Kategorien
-- Tabs unten zum schnellen Wechsel
+- touch/mouse/keyboard-ready
 - PWA-ready
+
 
 
