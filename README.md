@@ -1,7 +1,7 @@
 
-# News Webseite
+# News Website
 
-Simple News
+Simple RSS feed news
 
 ## Features
 
