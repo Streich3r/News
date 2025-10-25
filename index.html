@@ -163,31 +163,41 @@ const FEEDS={
 };
 
 function renderItems(items){
-  let html="<ul>";
-  items.slice(0,12).forEach(item=>{
-    const title=item.title||"Kein Titel",link=item.link||"#",date=item.pubDate||item.isoDate||"";
-    const dateHtml=date?`<div class="muted">${new Date(date).toLocaleString()}</div>`:"";
-    html+=`<li><a href="${link}" target="_blank" rel="noopener">${title}</a>${dateHtml}</li>`;
-  });
-  html+="</ul>"; return html;
+  let html="<ul>";
+  // Beachten Sie: Es ist besser, hier nur .slice(0, 12) aufzurufen, falls die Sortierung später erfolgt.
+  items.slice(0,12).forEach(item=>{
+    const title=item.title||"Kein Titel",link=item.link||"#",date=item.pubDate||item.isoDate||"";
+    const dateHtml=date?`<div class="muted">${new Date(date).toLocaleString()}</div>`:"";
+    html+=`<li><a href="${link}" target="_blank" rel="noopener">${title}</a>${dateHtml}</li>`;
+  });
+  html+="</ul>"; return html;
 }
 
 function loadFeed(containerId,urls){
-  const el=document.getElementById(containerId);
-  el.innerHTML="<p class='muted'>Lade Feed…</p>";
-  let attempt=0;
-  function tryLoad(){
-    if(!urls[attempt]) { el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
-    fetch(urls[attempt])
-      .then(res=>res.json())
-      .then(data=>{
-        const items=Array.isArray(data.items)?data.items:[];
-        if(items.length) el.innerHTML=renderItems(items);
-        else { attempt++; tryLoad(); }
-      })
-      .catch(()=>{ attempt++; tryLoad(); });
-  }
-  tryLoad();
+  const el=document.getElementById(containerId);
+  el.innerHTML="<p class='muted'>Lade Feed…</p>";
+  let attempt=0;
+  function tryLoad(){
+    if(!urls[attempt]) { el.innerHTML="<p class='muted'>Feed konnte nicht geladen werden.</p>"; return; }
+    fetch(urls[attempt])
+      .then(res=>res.json())
+      .then(data=>{
+        let items=Array.isArray(data.items)?data.items:[];
+        
+        // NEU: Sortiere die Elemente chronologisch (neueste zuerst)
+        items.sort((a, b) => {
+          const dateA = new Date(a.isoDate || a.pubDate);
+          const dateB = new Date(b.isoDate || b.pubDate);
+          // b - a sortiert absteigend (neueste zuerst)
+          return dateB - dateA; 
+        });
+
+        if(items.length) el.innerHTML=renderItems(items);
+        else { attempt++; tryLoad(); }
+      })
+      .catch(()=>{ attempt++; tryLoad(); });
+  }
+  tryLoad();
 }
 
 // Tabs & Nav
