@@ -1,7 +1,7 @@
 
 # News Website
 
-Simple RSS feed news
+Simple RSS feed news in german
 
 ## Features
 
