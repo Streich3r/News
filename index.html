@@ -229,18 +229,24 @@ function showTabs(show){
   tabsBar.classList.toggle('show',show);
   navButton.classList.toggle('open',show);
 
-  **if (show) {**
-    **// 1. Finde den aktuell aktiven Tab**
-    **const activeTab = document.querySelector('.tab.active');**
+  if (show) {
+    // 1. Finde den aktuell aktiven Tab
+    const activeTab = document.querySelector('.tab.active');
     
-    **if (activeTab) {**
-      **// 2. Scrolle den aktiven Tab in die Mitte der Navigationsleiste**
-      **activeTab.scrollIntoView({**
-        **behavior: 'smooth',**
-        **inline: 'center'**
-      **});**
-    **}**
-  **}**
+    if (activeTab) {
+      // 2. Berechne die Ziel-Scroll-Position (Zentrierung)
+      // activeTab.offsetLeft: Position des Tabs vom linken Rand des Containers
+      // activeTab.offsetWidth / 2: Hälfte der Breite des Tabs
+      // tabsBar.offsetWidth / 2: Hälfte der Breite der sichtbaren Leiste
+      const centerScroll = activeTab.offsetLeft + (activeTab.offsetWidth / 2) - (tabsBar.offsetWidth / 2);
+
+      // 3. Wende die Scroll-Position mit sanftem Verhalten an
+      tabsBar.scrollTo({
+        left: centerScroll,
+        behavior: 'smooth'
+      });
+    }
+  }
 }
 
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
