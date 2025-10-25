@@ -225,9 +225,22 @@ loadFeed('feed-de',FEEDS['feed-de']);
 tabs[0].classList.add('active');
 
 function showTabs(show){
-  tabsVisible=show;
-  tabsBar.classList.toggle('show',show);
-  navButton.classList.toggle('open',show);
+  tabsVisible=show;
+  tabsBar.classList.toggle('show',show);
+  navButton.classList.toggle('open',show);
+
+  **if (show) {**
+    **// 1. Finde den aktuell aktiven Tab**
+    **const activeTab = document.querySelector('.tab.active');**
+    
+    **if (activeTab) {**
+      **// 2. Scrolle den aktiven Tab in die Mitte der Navigationsleiste**
+      **activeTab.scrollIntoView({**
+        **behavior: 'smooth',**
+        **inline: 'center'**
+      **});**
+    **}**
+  **}**
 }
 
 navButton.addEventListener('click',()=>{ showTabs(!tabsVisible); });
@@ -243,10 +256,6 @@ tabs.forEach((tab,i)=>{
   });
 });
 
-// Swipe/Scroll Tabs
-//let startX=0,scrollStart=0;
-//tabsBar.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; scrollStart=tabsBar.scrollLeft; });
-//tabsBar.addEventListener('touchmove',e=>{ const dx=startX - e.touches[0].clientX; tabsBar.scrollLeft = scrollStart + dx; });
 </script>
 
 </body>
