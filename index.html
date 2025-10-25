@@ -31,33 +31,33 @@
   
 <style>
   
-body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
-canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
+    body { margin:0; font-family:sans-serif; height:100vh; overflow:hidden; background:#000; }
+    canvas#matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; background:black; }
 
-.overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,18,18,0.85); 
+    .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(18,18,18,0.85); 
           backdrop-filter:blur(2px); z-index:1; display:flex; flex-direction:column; justify-content:flex-end; }
 
-.content-wrapper { flex-grow:1; display:flex; overflow:hidden; }
-.tab-content { flex:0 0 100%; overflow-y:auto; padding:12em 1em 12em 1em; box-sizing:border-box; display:none; }
-.tab-content.active { display:block; }
+    .content-wrapper { flex-grow:1; display:flex; overflow:hidden; }
+    .tab-content { flex:0 0 100%; overflow-y:auto; padding:12em 1em 12em 1em; box-sizing:border-box; display:none; }
+    .tab-content.active { display:block; }
 
-a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
-a:hover { text-decoration:underline; }
+    a { color:#03a9f4; text-decoration:none; display:block; margin:0.5em 0; }
+    a:hover { text-decoration:underline; }
 
-.nav-button { 
-  position:fixed; 
-  bottom:20px;
-  left:50%; 
-  transform:translateX(-50%); 
-  width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); 
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
-  cursor:pointer; z-index:10; 
-  box-shadow:0 4px 10px rgba(0,0,0,0.3); 
-  -webkit-tap-highlight-color: transparent; /* FÜR MOBILE GERÄTE */
-  outline: none; /* Für das Deaktivieren des Fokus-Randes bei Klicks/Tab-Navigation */
-  transition: background 0.3s; }
+    .nav-button { 
+      position:fixed; 
+      bottom:20px;
+      left:50%; 
+      transform:translateX(-50%); 
+      width:60px; height:60px; border-radius:50%; background:rgba(3,218,198,0.7); 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      cursor:pointer; z-index:10; 
+      box-shadow:0 4px 10px rgba(0,0,0,0.3); 
+      -webkit-tap-highlight-color: transparent; /* FÜR MOBILE GERÄTE */
+      outline: none; /* Für das Deaktivieren des Fokus-Randes bei Klicks/Tab-Navigation */
+      transition: background 0.3s; }
   
 .nav-button.open { background: rgba(3,218,198,1); }
 
@@ -84,21 +84,36 @@ a:hover { text-decoration:underline; }
   z-index:9;
   overscroll-behavior-x:contain;
 }
-.tabs.show { bottom:90px; }
+    .tabs.show { bottom:90px; }
 
-.tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer;
+    .tab { flex:0 0 auto; padding:0.5em 1em; cursor:pointer;
       white-space:nowrap; border-radius:8px; margin:0 5px; 
       transition: background 0.3s; scroll-snap-align:start; 
       color:white; }
   
-.tab:hover { background: rgba(255,255,255,0.1); }
+    .tab:hover { background: rgba(255,255,255,0.1); }
   
-.tab.active { color:#03dac6; font-weight:bold; }
+    .tab.active { color:#03dac6; font-weight:bold; }
 
-.tab-content ul { list-style:none; padding:0; margin:0; }
+    .tab-content ul { list-style:none; padding:0; margin:0; }
   
-.tab-content li { margin:0.5em 0; }
-.muted { color:#aaa; font-size:0.9em; }
+   .tab-content li { 
+    margin: 0.5em 0; 
+    
+    /* NEU: Rand um jeden Feed-Eintrag */
+    border: 1px solid #333; /* Schmaler, dunkler, grauer Rand */
+    border-radius: 4px; /* Leichte Abrundung für die Optik */
+    padding: 0.7em; /* Innerer Abstand zwischen Rand und Text */
+    background: rgba(30, 30, 30, 0.5); /* Leichter Hintergrund zur besseren Abgrenzung */
+}
+
+ 
+    .tab-content li a {
+      margin: 0; 
+    }
+  
+    .muted { color:#aaa; font-size:0.9em; }
+  
 </style>
 </head>
 <body>
